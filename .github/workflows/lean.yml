@@ -1,0 +1,74 @@
+name: Lean
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          build: true
+      - name: Print the main statements and their axioms
+        run: lake env lean Check.lean
+      - name: Deliberately false variants must be rejected
+        run: |
+          errors() { lake env lean "$1" 2>&1 | grep -c ": error" || true; }
+          a="$(errors controls/NegativeControls.lean)"
+          b="$(errors controls/NegativeControlsFamily.lean)"
+          c="$(errors controls/NegativeControlsSharp.lean)"
+          echo "errors reported: $a, $b, $c (expected 3, 4, 5)"
+          test "$a" = 3 && test "$b" = 4 && test "$c" = 5
+      - name: Solution.lean must be the generated copy of Conj2/
+        run: |
+          python3 tools/make_solution.py
+          git diff --exit-code -- Solution.lean
+
+  comparator:
+    name: Judge Solution against Challenge
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+      - name: Install bubblewrap, the sandbox of lake comparator
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bubblewrap
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Run lake comparator with the independent kernels of the toolchain
+        run: |
+          prefix="$(lean --print-prefix)"
+          python3 - "$prefix" <<'PY'
+          import json
+          import sys
+
+          prefix = sys.argv[1]
+          with open("comparator.json", encoding="utf-8") as source:
+              config = json.load(source)
+          config.pop("enable_nanoda", None)
+          config["external_kernels"] = {
+              "nanoda": [prefix + "/bin/nanoda_bin"],
+              "con-ron": [prefix + "/bin/con-ron"],
+          }
+          with open("comparator.ci.json", "w", encoding="utf-8") as target:
+              json.dump(config, target, indent=2)
+          PY
+          lake exe cache get
+          lake comparator --config comparator.ci.json

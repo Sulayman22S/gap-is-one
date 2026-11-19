@@ -36,6 +36,7 @@ Run with `lake env lean Check.lean`. Expected axioms: `propext`, `Classical.choi
 #check @Conj2.Family.family_counterexample
 #check @Conj2.Family.family_gap
 #check @Conj2.Family.exists_counterexample
+#check @Conj2.Family.counterexample_of_card
 #check @Conj2.Family.conjecture_two_false_of_card
 #check @Conj2.Family.mu₁_fam_le
 #check @Conj2.Family.lambda₂_fam_ge
@@ -48,5 +49,6 @@ Run with `lake env lean Check.lean`. Expected axioms: `propext`, `Classical.choi
 #print axioms Conj2.Family.family_counterexample
 #print axioms Conj2.Family.family_gap
 #print axioms Conj2.Family.exists_counterexample
+#print axioms Conj2.Family.counterexample_of_card
 #print axioms Conj2.Family.conjecture_two_false_of_card
 #print axioms Conj2.Family.fam_zero_eq_G11

@@ -776,7 +776,11 @@ structured vertex type, and the bounds are transferred to \texttt{Fin}~$n$ along
 The proofs depend only on the three standard axioms of Lean with Mathlib
 (\lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}) and contain no \lean{sorry}. As a
 check against vacuity, twelve false variants of the statements, such as the claim that the
-constant $1$ also fails, were confirmed to be rejected.
+constant $1$ also fails, were confirmed to be rejected. Three headline
+statements, namely that Conjecture~2 is false, Theorem~\ref{thm:family} and
+Theorem~\ref{thm:sharp}, are also given on their own in a file \texttt{Challenge.lean} that
+imports only Mathlib. The tool \texttt{lake comparator} confirms that the development proves
+exactly these statements, and it replays the proofs through two further proof checkers.
 
 Not formalized: the strict inequality $\lambda_2<\mu_1-1$, Lemma~\ref{lem:interlace},
 Proposition~\ref{prop:exact}, the corollaries of Section~\ref{sec:sharp},

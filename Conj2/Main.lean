@@ -34,14 +34,18 @@ namespace Conj2
 
 `Matrix.IsHermitian.eigenvalues₀` lists the eigenvalues of a Hermitian matrix with multiplicity
 in decreasing order (`Matrix.IsHermitian.eigenvalues₀_antitone`), so index `1` is the second
-largest. -/
+largest. The hypothesis `h` only serves to show that the index `1` exists. Its proof is written as
+a term, not with tactics, so that `Challenge.lean` and `Solution.lean` elaborate it identically. -/
 noncomputable def lambda₂ {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj] (h : 2 ≤ n) : ℝ :=
-  (G.isHermitian_adjMatrix ℝ).eigenvalues₀ ⟨1, by rw [Fintype.card_fin]; omega⟩
+  (G.isHermitian_adjMatrix ℝ).eigenvalues₀
+    ⟨1, lt_of_lt_of_eq (Nat.lt_of_succ_le h) (Fintype.card_fin n).symm⟩
 
 /-- `μ₁(G)`: the largest eigenvalue of the Laplacian matrix `D − A` (index `0` of the decreasing
-list `Matrix.IsHermitian.eigenvalues₀`). -/
+list `Matrix.IsHermitian.eigenvalues₀`). The hypothesis `h` only serves to show that the index `0`
+exists. -/
 noncomputable def mu₁ {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj] (h : 2 ≤ n) : ℝ :=
-  (G.isHermitian_lapMatrix ℝ).eigenvalues₀ ⟨0, by rw [Fintype.card_fin]; omega⟩
+  (G.isHermitian_lapMatrix ℝ).eigenvalues₀
+    ⟨0, lt_of_lt_of_eq (Nat.lt_of_lt_of_le Nat.zero_lt_two h) (Fintype.card_fin n).symm⟩
 
 /-- `μ₁(G)` is at least every Laplacian eigenvalue of `G`. -/
 lemma lapEigenvalue_le_mu₁ {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj] (h : 2 ≤ n)

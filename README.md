@@ -63,6 +63,7 @@ from the matrices (needs numpy).
 | `Conj2.conjecture_two_false` | Conjecture 2 is false (explicit 11-vertex graph `G11`) |
 | `Conj2.counterexample_gap` | `13/888 ≤ λ₂(G11) − (μ₁(G11) − 2)` |
 | `Conj2.Family.exists_counterexample` | `∀ n ≥ 11, ∃ G : SimpleGraph (Fin n), G.Connected ∧ μ₁(G) − 2 < λ₂(G)` |
+| `Conj2.Family.counterexample_of_card` | the same with `2 ≤ n` as an explicit hypothesis, so that the statement contains no proof term |
 | `Conj2.Family.conjecture_two_false_of_card` | for every `n ≥ 11` Conjecture 2 fails on `Fin n` |
 | `Conj2.Family.family_gap` | `∀ N, 13/888 ≤ λ₂(D N) − (μ₁(D N) − 2)` |
 
@@ -133,6 +134,25 @@ at the attachment vertex and `ω` for the sum over the other non-clique vertices
 and the bracket is non-negative by Cauchy–Schwarz (`ω² ≤ (s−1)·Σ_others z²`) and the identity
 `(s + 3/s − 3)(1 + 3/s) − (s − 1) = (1 − 3/s)²`.
 
+## The statement, for an independent check
+
+Three files follow the layout that `lake comparator` expects. It is the layout of the Principia
+and Palomar templates for Lean formalizations.
+
+- [`Challenge.lean`](Challenge.lean) contains the two definitions and three theorems, each left
+  as `sorry`: `Conj2.best_constant`, `Conj2.conjecture_two_false` and
+  `Conj2.Family.counterexample_of_card`. It imports only Mathlib. Read this file to see exactly
+  what is claimed.
+- [`Solution.lean`](Solution.lean) is the whole proof in one module. It is generated from the
+  nine files of `Conj2/` by `python tools/make_solution.py`.
+- [`comparator.json`](comparator.json) names the three theorems and the permitted axioms.
+
+`lake comparator` builds both modules. It checks that every named theorem has the same statement
+in both and that the definitions it uses are identical, that no axiom outside the list is used,
+and it replays the proofs through Lean's kernel and through two independent checkers, nanoda
+and con-ron. It needs Linux with `bubblewrap`. The workflow in `.github/workflows/lean.yml` runs
+it, together with the build, the audit and the false variants, on every change.
+
 ## Related work
 
 Searched on 18 November 2026 (web search, arXiv listings and abstract search, OpenAlex, the
@@ -195,8 +215,9 @@ lake env lean Check.lean
 ```
 
 `Check.lean` prints the main statements and their axioms. Expected:
-`[propext, Classical.choice, Quot.sound]` and nothing else. The sources contain no `sorry` and no
-`native_decide`.
+`[propext, Classical.choice, Quot.sound]` and nothing else. The proof files (`Conj2/` and
+`Solution.lean`) contain no `sorry` and no `native_decide`. `Challenge.lean` states three theorems
+and leaves each as `sorry` on purpose, so `lake build` prints three warnings for it.
 
 On a machine that is short of free memory, plain `lake build` can fail with
 `failed to read file … .olean`, because it compiles independent files in parallel and every Lean

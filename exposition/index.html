@@ -648,17 +648,19 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 56px 0 24px; }
 <p>The proofs are written in Lean 4. Lean is a programming language for mathematics: you state a theorem, you write its proof, and a small trusted program called the kernel checks every logical step. The library Mathlib supplies the definitions of graphs, matrices and eigenvalues. Our files add about 1,950 lines on top of it. Here are the two definitions and the main statement as they stand in the project:</p>
 <pre class="lean"><code>noncomputable def lambda₂ {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj]
     (h : 2 ≤ n) : ℝ :=
-  (G.isHermitian_adjMatrix ℝ).eigenvalues₀ ⟨1, by rw [Fintype.card_fin]; omega⟩
+  (G.isHermitian_adjMatrix ℝ).eigenvalues₀
+    ⟨1, lt_of_lt_of_eq (Nat.lt_of_succ_le h) (Fintype.card_fin n).symm⟩
 
 noncomputable def mu₁ {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj]
     (h : 2 ≤ n) : ℝ :=
-  (G.isHermitian_lapMatrix ℝ).eigenvalues₀ ⟨0, by rw [Fintype.card_fin]; omega⟩
+  (G.isHermitian_lapMatrix ℝ).eigenvalues₀
+    ⟨0, lt_of_lt_of_eq (Nat.lt_of_lt_of_le Nat.zero_lt_two h) (Fintype.card_fin n).symm⟩
 
 theorem best_constant (c : ℝ) :
     (∀ (n : ℕ) (hn : 2 ≤ n) (G : SimpleGraph (Fin n)) [DecidableRel G.Adj],
         G.Connected → lambda₂ G hn ≤ mu₁ G hn - c) ↔ c ≤ 1</code></pre>
-<p>In Mathlib, <code>eigenvalues₀</code> is the list of eigenvalues of a symmetric matrix in decreasing order, counted from 0. Position 1 of the adjacency matrix is <span class="v">λ</span><sub>2</sub> and position 0 of the Laplacian matrix is <span class="v">μ</span><sub>1</sub>. The theorem then reads: for every real number <span class="v">c</span>, the claim that every connected graph on <span class="v">n</span> ≥ 2 numbered vertices satisfies <span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − <span class="v">c</span> is true if and only if <span class="v">c</span> ≤ 1.</p>
-<p>Three checks back this up. Lean lists the axioms each proof depends on, and ours depend only on the three standard ones. The files contain no <code>sorry</code>, Lean's placeholder for a missing proof. And we fed Lean twelve deliberately false variants, such as the claim that the constant 1 fails as well. It rejected all twelve.</p>
+<p>In Mathlib, <code>eigenvalues₀</code> is the list of eigenvalues of a symmetric matrix in decreasing order, counted from 0. Position 1 of the adjacency matrix is <span class="v">λ</span><sub>2</sub> and position 0 of the Laplacian matrix is <span class="v">μ</span><sub>1</sub>. The last line of each definition only proves that this position exists when <span class="v">n</span> ≥ 2. The theorem then reads: for every real number <span class="v">c</span>, the claim that every connected graph on <span class="v">n</span> ≥ 2 numbered vertices satisfies <span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − <span class="v">c</span> is true if and only if <span class="v">c</span> ≤ 1.</p>
+<p>Four checks back this up. Lean lists the axioms each proof depends on, and ours depend only on the three standard ones. The proof files contain no <code>sorry</code>, Lean's placeholder for a missing proof. We fed Lean twelve deliberately false variants, such as the claim that the constant 1 fails as well, and it rejected all twelve. And a separate tool, Lean's comparator, confirmed that what is proved is word for word what a short file of statements claims, and replayed the proofs through two more independent checkers.</p>
 <p>One thing Lean cannot check is whether the formal statement says what the English says. A person has to read it, and it is short enough to read.</p>
 
 <h2 id="new">What is new and what is not</h2>

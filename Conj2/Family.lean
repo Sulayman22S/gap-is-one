@@ -522,6 +522,15 @@ theorem exists_counterexample (n : ℕ) (hn : 11 ≤ n) :
   obtain ⟨N, rfl⟩ : ∃ N, n = N + 3 + 8 := ⟨n - 11, by omega⟩
   exact ⟨fam N, inferInstance, family_counterexample N⟩
 
+/-- The same statement with the hypothesis `2 ≤ n` passed explicitly, so that it contains no
+proof term of its own: for every `n ≥ 11` there is a connected simple graph on `Fin n` with
+`μ₁ − 2 < λ₂`. -/
+theorem counterexample_of_card (n : ℕ) (h2 : 2 ≤ n) (h11 : 11 ≤ n) :
+    ∃ (G : SimpleGraph (Fin n)) (_ : DecidableRel G.Adj),
+      G.Connected ∧ mu₁ G h2 - 2 < lambda₂ G h2 := by
+  obtain ⟨G, inst, hc, hlt⟩ := exists_counterexample n h11
+  exact ⟨G, inst, hc, hlt⟩
+
 /-- **Conjecture 2 fails on `n` vertices for every `n ≥ 11`.** -/
 theorem conjecture_two_false_of_card (n : ℕ) (hn : 11 ≤ n) :
     ¬ ∀ (G : SimpleGraph (Fin n)) [DecidableRel G.Adj],
