@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uses of the gap theorem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one reading column on cool paper; figures break out to a wider measure.
+   Ink and two data colours only: blue for what was tested, orange for the one edge that matters. */
+:root {
+  color-scheme: light;
+  --page: #f3f5f8;
+  --surface: #fcfcfb;
+  --ink: #10151c;
+  --ink-2: #47505d;
+  --muted: #76808d;
+  --rule: #dbe0e7;
+  --link: #1c5cab;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --grid: #e4e7ec;
+  --axis: #c3c9d1;
+  --font-body: "STIX Two Text", Cambria, Georgia, "Times New Roman", serif;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0e1013;
+    --surface: #1a1a19;
+    --ink: #eceef1;
+    --ink-2: #bcc2cb;
+    --muted: #8b929d;
+    --rule: #2c3037;
+    --link: #86b6ef;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --grid: #2a2d31;
+    --axis: #3b3f45;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0e1013;
+  --surface: #1a1a19;
+  --ink: #eceef1;
+  --ink-2: #bcc2cb;
+  --muted: #8b929d;
+  --rule: #2c3037;
+  --link: #86b6ef;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --grid: #2a2d31;
+  --axis: #3b3f45;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 19px;
+  line-height: 1.62;
+}
+.wrap {
+  display: grid;
+  grid-template-columns: minmax(16px, 1fr) minmax(0, 40rem) minmax(16px, 1fr);
+  row-gap: 0;
+  padding: 56px 0 96px;
+}
+.wrap > * { grid-column: 2; }
+.wrap > .wide {
+  grid-column: 1 / -1;
+  width: min(900px, 100% - 32px);
+  justify-self: center;
+}
+
+h1, h2, h3, .eyebrow, figcaption, .brief, table, summary, .legend, .tip, .sources, dt, .note {
+  font-family: var(--font-ui);
+}
+.eyebrow {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+h1 {
+  margin: 0 0 20px;
+  font-size: clamp(32px, 6vw, 46px);
+  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.deck {
+  margin: 0 0 32px;
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.byline {
+  margin: -14px 0 32px;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+h2 {
+  margin: 64px 0 12px;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+h3 {
+  margin: 36px 0 8px;
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 600;
+  text-wrap: balance;
+}
+p { margin: 0 0 18px; }
+a { color: var(--link); text-underline-offset: 2px; }
+a:focus-visible, summary:focus-visible, .plot:focus-visible {
+  outline: 2px solid var(--series-1);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+ul { margin: 0 0 18px; padding-left: 1.2em; }
+li { margin-bottom: 8px; }
+sub, sup { font-size: 0.72em; line-height: 0; }
+.v { font-style: italic; }
+code, pre { font-family: var(--font-mono); }
+code { font-size: 0.82em; }
+
+.brief {
+  margin: 0 0 8px;
+  padding: 20px 24px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.brief h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.brief ul { margin: 0; }
+.brief li:last-child { margin-bottom: 0; }
+
+.formula {
+  margin: 4px 0 20px;
+  padding: 14px 18px;
+  overflow-x: auto;
+  background: var(--surface);
+  border-left: 3px solid var(--axis);
+  font-size: 18px;
+  white-space: nowrap;
+}
+.formula .frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  margin: 0 4px;
+}
+.formula .frac > span:first-child { border-bottom: 1px solid currentColor; padding: 0 6px 2px; }
+.formula .frac > span:last-child { padding: 2px 6px 0; }
+.formula .name { font-family: var(--font-ui); font-size: 15px; color: var(--ink-2); margin-right: 10px; }
+
+blockquote.claim {
+  margin: 8px 0 22px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--ink);
+  border-radius: 0 10px 10px 0;
+  font-size: 20px;
+}
+blockquote.claim b { font-family: var(--font-ui); font-weight: 600; font-size: 16px; }
+
+figure { margin: 30px auto 34px; }
+figure .frame {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 18px;
+  overflow-x: auto;
+}
+figure svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--ink);
+}
+figcaption {
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+figcaption b { font-weight: 600; color: var(--ink); }
+
+/* diagram parts */
+.e { stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; fill: none; }
+.e.core { opacity: 0.5; }
+.e.sat { opacity: 0.24; }
+.e.link { stroke-width: 2.6; }
+.e.stub { opacity: 0.28; }
+.e.removed { stroke: var(--series-2); stroke-width: 2.2; stroke-dasharray: 7 6; }
+.vx { fill: var(--surface); stroke: currentColor; stroke-width: 1.7; }
+.vx.solid { fill: currentColor; }
+.vx.conn { fill: var(--series-1); stroke: var(--series-1); }
+.lbl { font: 500 13px var(--font-ui); fill: currentColor; }
+.lbl.soft { fill: var(--ink-2); font-weight: 400; }
+.lbl.mid { text-anchor: middle; }
+.num { font: 600 15px var(--font-ui); fill: currentColor; text-anchor: middle; dominant-baseline: central; }
+.num.zero { fill: var(--muted); font-weight: 400; }
+.tag { fill: var(--surface); stroke: var(--axis); stroke-width: 1; }
+
+/* charts */
+.chart .frame { padding: 16px 16px 10px; overflow: visible; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0 0 6px; font-size: 14px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { display: inline-block; width: 22px; height: 0; border-top: 2px solid; border-radius: 2px; }
+.legend .k1 { border-color: var(--series-1); }
+.legend .k2 { border-color: var(--series-2); }
+.plot { position: relative; min-height: 120px; }
+.plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+.plot .gridline { stroke: var(--grid); stroke-width: 1; }
+.plot .axisline { stroke: var(--axis); stroke-width: 1; }
+.plot .ref { stroke: var(--ink-2); stroke-width: 1; }
+.plot .tick { font: 400 12px var(--font-ui); fill: var(--muted); font-variant-numeric: tabular-nums; }
+.plot .axistitle { font: 400 12.5px var(--font-ui); fill: var(--ink-2); }
+.plot .reflabel { font: 500 12.5px var(--font-ui); fill: var(--ink-2); }
+.plot .serieslabel { font: 500 13px var(--font-ui); fill: var(--ink); }
+.chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart .s1 { stroke: var(--series-1); }
+.chart .s2 { stroke: var(--series-2); }
+.chart .dot { stroke: var(--surface); stroke-width: 2; }
+.chart .dot.s1 { fill: var(--series-1); }
+.chart .dot.s2 { fill: var(--series-2); }
+.chart .ring { fill: var(--surface); stroke-width: 2; }
+.legend svg.key { flex: none; overflow: visible; }
+.plot .cross { stroke: var(--ink-2); stroke-width: 1; }
+.plot .hit { fill: transparent; }
+.tip {
+  position: absolute;
+  z-index: 2;
+  min-width: 190px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--axis);
+  border-radius: 8px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.14);
+  font-size: 13px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.tip .th { color: var(--ink-2); margin-bottom: 6px; }
+.tip .tr { display: flex; align-items: center; gap: 8px; }
+.tip .tr i { width: 14px; border-top: 2px solid; }
+.tip .tr b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.tip .tr span { color: var(--ink-2); }
+.noscript { font-family: var(--font-ui); font-size: 14px; color: var(--ink-2); }
+
+details { margin-top: 10px; font-family: var(--font-ui); font-size: 14px; }
+summary { cursor: pointer; color: var(--link); width: fit-content; }
+.tablewrap { overflow-x: auto; margin-top: 10px; }
+table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 14px 6px 0; text-align: right; white-space: nowrap; }
+th { font-weight: 600; color: var(--ink-2); border-bottom: 1px solid var(--axis); vertical-align: bottom; white-space: normal; }
+td { border-bottom: 1px solid var(--rule); }
+th:first-child, td:first-child { text-align: left; }
+
+pre.lean {
+  margin: 8px 0 22px;
+  padding: 16px 18px;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.theorem {
+  margin: 26px 0;
+  padding: 20px 24px;
+  background: var(--surface);
+  border: 1px solid var(--ink);
+  border-radius: 10px;
+  font-size: 21px;
+  line-height: 1.45;
+}
+.theorem b { font-family: var(--font-ui); font-weight: 600; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+
+dl { margin: 0; display: grid; grid-template-columns: 1fr; gap: 14px; }
+dt { font-size: 15px; font-weight: 600; }
+dd { margin: 2px 0 0; font-size: 17px; line-height: 1.5; }
+
+.sources { font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.sources ol { padding-left: 1.3em; margin: 0; }
+.sources li { margin-bottom: 8px; }
+.note { font-size: 14.5px; color: var(--ink-2); line-height: 1.5; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 56px 0 24px; }
+
+/* diagrams shrink with the screen, so their labels grow to stay readable */
+@media (max-width: 780px) {
+  .lbl { font-size: 17px; }
+  .num { font-size: 18px; }
+}
+@media (max-width: 520px) {
+  .lbl { font-size: 21px; }
+  .num { font-size: 22px; }
+  figure .frame { padding: 12px; }
+  body { font-size: 17.5px; }
+  .deck { font-size: 19px; }
+  .wrap { padding-top: 36px; }
+  .theorem, blockquote.claim { font-size: 18.5px; }
+}
+@media print {
+  body { background: #fff; font-size: 11.5pt; }
+  .wrap { padding: 0; }
+  figure, .brief, .theorem, pre.lean { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  .tip { display: none; }
+}
+
+/* additions for this page: headline figures, result tables, a bar chart */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 4px auto 8px;
+}
+.tile {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 16px 18px 14px;
+  font-family: var(--font-ui);
+}
+.tile .val { font-size: 34px; font-weight: 600; line-height: 1.1; letter-spacing: -0.01em; }
+.tile .lab { margin-top: 6px; font-size: 14px; line-height: 1.4; color: var(--ink-2); }
+@media (max-width: 720px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.status { font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
+.status::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; border: 1.5px solid var(--ink-2); vertical-align: baseline; }
+.status.lean::before { background: var(--ink-2); }
+p.status-line { margin: -6px 0 18px; }
+
+table.rows { width: 100%; font-size: 14.5px; }
+table.rows th, table.rows td { text-align: left; white-space: normal; padding: 8px 14px 8px 0; vertical-align: top; }
+table.rows td.n, table.rows th.n { text-align: right; white-space: nowrap; }
+table.rows td.id { white-space: normal; max-width: 11em; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+table.rows td:nth-child(3) { min-width: 15em; }
+table.rows td.f { font-family: var(--font-body); font-size: 17px; white-space: nowrap; }
+table.rows tr.grp td { padding-top: 18px; font-weight: 600; color: var(--ink); border-bottom: 1px solid var(--axis); }
+
+.bars svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bars .seg.s1 { fill: var(--series-1); stroke: none; }
+.bars .seg.s2 { fill: var(--series-2); stroke: none; }
+.bars .seg:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.bars .cat { font: 500 13px var(--font-ui); fill: var(--ink); }
+.bars .inlabel { font: 600 12.5px var(--font-ui); fill: #ffffff; pointer-events: none; }
+.bars .total { font: 500 13px var(--font-ui); fill: var(--ink-2); }
+.legend i.box { width: 12px; height: 12px; border: 0; border-radius: 3px; }
+.legend i.box.k1 { background: var(--series-1); }
+.legend i.box.k2 { background: var(--series-2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">Potential applications</p>
+<h1>What the gap theorem is good for</h1>
+<p class="deck">The theorem says that two numbers attached to every connected graph, <span class="v">λ</span><sub>2</sub> and <span class="v">μ</span><sub>1</sub>, are always more than 1 apart and can come as close to 1 as you like. Its most direct use is as a test. The graphs built for the proof break 125 of the open conjectures in the same computer-generated corpus, Conjecture 2 among them. This page says what follows from the result, what we measured, and where the effect is too small to matter.</p>
+<p class="byline">Sulaymon Sadullo, November 2026. Also in this project: <a href="../exposition/index.html">the exposition</a>, <a href="../paper/paper.pdf">the paper</a>, and <a href="../index.html">the Lean proof</a>.</p>
+
+<div class="tiles wide" role="list" aria-label="Headline figures">
+  <div class="tile" role="listitem"><div class="val">14,150</div><div class="lab">open conjectures in the corpus, all tested</div></div>
+  <div class="tile" role="listitem"><div class="val">125</div><div class="lab">fail on the graphs from the proof</div></div>
+  <div class="tile" role="listitem"><div class="val">22</div><div class="lab">of those need the construction</div></div>
+  <div class="tile" role="listitem"><div class="val">10</div><div class="lab">vertices in the smallest new counterexample</div></div>
+</div>
+
+<h2 id="test-set">A test set for machine-made conjectures</h2>
+<p>The corpus of Duhamel and Cazenave holds 305,755 conjectures. Each is an inequality between graph quantities, written in a small formula language. Its archive marks 14,150 of them as open: not proved, and not refuted on the authors' test graphs. We wrote our own evaluator for the formula language and ran every open conjecture on the graphs that came out of the proof.</p>
+<ul>
+  <li><b>Deleted-edge barbells.</b> Two complete groups joined by a path, each missing one edge at the vertex where the path attaches. The 11-vertex counterexample to Conjecture 2 is one of them.</li>
+  <li><b>Cluster graphs.</b> Two clusters, each a complete core plus satellites joined to the whole core, linked through one connector vertex. These are the graphs that show the constant 1 is best possible.</li>
+  <li><b>Clusters on a longer path.</b> The same clusters with more than one vertex between them.</li>
+</ul>
+<p>As a control we ran plain barbells: two complete graphs joined by one edge or a short path. They use none of our ideas.</p>
+
+<h3>The count</h3>
+<p>Of the 14,150 open conjectures, 125 fail on our graphs. They split in two.</p>
+<p>For 22 of them the construction matters. No plain barbell we tried breaks them, at any size up to two million vertices.</p>
+<p>The other 103 fail on plain barbells as well. They owe nothing to the theorem and fail for size alone. The corpus's own test set contains two complete graphs joined by an edge, but only up to 30 vertices a side, and every one of these 103 needs at least 62 vertices.</p>
+
+<figure class="wide chart bars" id="chart-sizes">
+  <div class="frame">
+    <div class="legend" aria-hidden="true">
+      <span><i class="box k2"></i>needs the construction</span>
+      <span><i class="box k1"></i>size only: plain barbells break it too</span>
+    </div>
+    <div class="plot" role="img" aria-label="Stacked bar chart of the 125 broken conjectures by the size of the smallest graph that breaks them. Up to 60 vertices: 14, all needing the construction. From 61 to 1,000 vertices: 83, of which 1 needs the construction. Over 1,000 vertices: 28, of which 7 need the construction."></div>
+    <noscript><p class="noscript">This chart is drawn by a script. The same numbers are in the table below.</p></noscript>
+  </div>
+  <figcaption><b>Figure 1.</b> The 125 broken conjectures, by the number of vertices of the smallest graph we tested that breaks each one. The corpus's authors tested every graph with at most 9 vertices, and larger graphs from fixed families. The largest graph any of the 125 needs has 20,000 vertices.</figcaption>
+  <details>
+    <summary>Table of values</summary>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Smallest graph that breaks it</th><th>Needs the construction</th><th>Size only</th></tr></thead>
+      <tbody>
+        <tr><td>10 to 60 vertices</td><td>14</td><td>0</td></tr>
+        <tr><td>61 to 1,000 vertices</td><td>1</td><td>82</td></tr>
+        <tr><td>over 1,000 vertices</td><td>7</td><td>21</td></tr>
+      </tbody>
+    </table></div>
+  </details>
+</figure>
+
+<h3>How we know the evaluator is right</h3>
+<p>The evaluator is ours, written from the description of the formula language. Three checks tie it to the corpus.</p>
+<ul>
+  <li>The archive records, for each refuted conjecture, the graph that refutes it and by how much. For the 61,115 whose recorded graph has at most 6 vertices, our evaluator reproduces the recorded amount in 61,074 cases. The 41 exceptions are formulas evaluated exactly at a singular point, such as the logarithm of 1 or a division by an eigenvalue that is exactly 0, where rounding decides the answer.</li>
+  <li>None of the 117,390 conjectures that the archive marks as proved fails on any of the 1,151 graphs in our two main runs.</li>
+  <li>A failure counts only if the left side exceeds the right by more than 10<sup>−6</sup>, the corpus's own threshold, and still does so after every eigenvalue and the Randić index have been nudged by one part in a billion. Among the conjectures that are not proved in Lean, the smallest excess is 0.0011.</li>
+</ul>
+<p>These are floating-point results. Four of the 125 are also proved false in Lean, as part of the main theorem. Eighteen more, the rest of the 22, are proved false in the paper from exact formulas, without Lean. The other 103 are numerical findings and should be read as such.</p>
+
+<h3>The 22 that need the construction</h3>
+<div class="tablewrap wide">
+<table class="rows">
+  <thead><tr><th>Corpus number</th><th>Conjecture</th><th>Smallest graph tested that breaks it</th><th class="n">Vertices</th><th class="n">Left − right</th></tr></thead>
+  <tbody>
+    <tr class="grp"><td colspan="5"><span class="v">λ</span><sub>2</sub> against <span class="v">μ</span><sub>1</sub>: proved false in Lean</td></tr>
+    <tr><td class="id">20829, 723906</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − 2</td><td>deleted-edge barbell, groups of 4, path of 3</td><td class="n">11</td><td class="n">0.0232</td></tr>
+    <tr><td class="id">121082</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − √2</td><td>cluster graph, core 97, 4 satellites</td><td class="n">203</td><td class="n">0.0007</td></tr>
+    <tr><td class="id">717992</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − <sup>4</sup>√2</td><td>cluster graph, core 1,060, 9 satellites</td><td class="n">2,139</td><td class="n">0.00002</td></tr>
+    <tr class="grp"><td colspan="5"><span class="v">λ</span><sub>2</sub> against the Randić index <span class="v">R</span>, the radius and the diameter: proved in the paper, not in Lean</td></tr>
+    <tr><td class="id">1053490, 861166</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">R</span> − rad/2</td><td>deleted-edge barbell, groups of 5, no path vertex</td><td class="n">10</td><td class="n">0.0351</td></tr>
+    <tr><td class="id">2632674</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">R</span> − √(rad − 1)</td><td>deleted-edge barbell, groups of 6, no path vertex</td><td class="n">12</td><td class="n">0.0131</td></tr>
+    <tr><td class="id">2619484, 2619875, 2632018, 2632484, 2638219</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ 1 + <span class="v">R</span> − √diam</td><td>deleted-edge barbell, groups of 12, no path vertex</td><td class="n">24</td><td class="n">0.0152</td></tr>
+    <tr><td class="id">2632694</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">R</span> − √(rad/2)</td><td>deleted-edge barbell, groups of 12, no path vertex</td><td class="n">24</td><td class="n">0.0039</td></tr>
+    <tr><td class="id">2632479</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">R</span> − (log rad)<sup>2</sup></td><td>deleted-edge barbell, groups of 13, no path vertex</td><td class="n">26</td><td class="n">0.0014</td></tr>
+    <tr><td class="id">2632494</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">R</span> − √diam / 2</td><td>deleted-edge barbell, groups of 24, no path vertex</td><td class="n">48</td><td class="n">0.0011</td></tr>
+    <tr><td class="id">806941, 2632538</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">R</span> − log rad</td><td>cluster graph, core 500, 2 satellites</td><td class="n">1,005</td><td class="n">0.0334</td></tr>
+    <tr><td class="id">2632658, 2632739</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">R</span> − log(diam/2)</td><td>cluster graph, core 500, 2 satellites</td><td class="n">1,005</td><td class="n">0.0334</td></tr>
+    <tr><td class="id">1053530</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">R</span> − √(log rad)</td><td>cluster graph, core 1,000, 2 satellites</td><td class="n">2,005</td><td class="n">0.0025</td></tr>
+    <tr><td class="id">2632774</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ <span class="v">R</span> − <sup>4</sup>√(log rad)</td><td>cluster graph, core 5,000, 2 satellites</td><td class="n">10,005</td><td class="n">0.0036</td></tr>
+    <tr class="grp"><td colspan="5">One more: proved in the paper, not in Lean</td></tr>
+    <tr><td class="id">708247</td><td class="f"><span class="v">λ</span><sub>2</sub> ≤ max<sub><span class="v">v</span></sub> <span class="v">R</span> · √(deg <span class="v">v</span> / (<span class="v">n</span> − deg <span class="v">v</span>))</td><td>cluster graph, core 14, 2 satellites</td><td class="n">33</td><td class="n">0.0042</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="note">Several corpus numbers on one line are the same inequality written in different ways. "Smallest" means smallest among the graphs we tested, not smallest possible. log is the natural logarithm. The full list of 125 is in the file <code>refuted_open_rows.csv</code> beside this page.</p>
+
+<h3>Why the middle group falls</h3>
+<p>All 17 conjectures in the middle group say the same kind of thing: the Randić index <span class="v">R</span> exceeds <span class="v">λ</span><sub>2</sub> by more than 1 once the radius or the diameter is large enough. Cluster graphs with two satellites per cluster refuse. Their radius is 3 and their diameter is 6 whatever their size, and <span class="v">R</span> − <span class="v">λ</span><sub>2</sub> sinks toward 1: we computed 1.0142 at 20,005 vertices and 1.0014 at two million.</p>
+<p>This touches Conjecture 1 of the source paper, <span class="v">R</span> ≥ <span class="v">λ</span><sub>2</sub> + 1. It survives on every graph we tried, by a margin that shrinks to 0.0014. The paper's author had seen the same on two cliques joined by an edge. Cluster graphs show it at radius 3, which is the case the 17 conjectures were betting against.</p>
+
+<h3>A counterexample with ten vertices</h3>
+<p>Conjecture 1053490 of the corpus says <span class="v">λ</span><sub>2</sub> ≤ <span class="v">R</span> − rad/2. Take two copies of the complete graph on 5 vertices, delete one edge in each, and join the copies by an edge between one end of each deleted edge. The result has 10 vertices and 19 edges.</p>
+
+<figure class="wide">
+  <div class="frame">
+    <svg class="diagram" viewBox="0 0 700 262" role="img" aria-label="Two complete graphs on five vertices, each with one edge deleted, joined by one edge between an end of each deleted edge. The vertices of the left copy carry the numbers 66, 85, 100, 100, 100 and those of the right copy carry the same numbers with a minus sign.">
+      <line class="e removed" x1="244.2" y1="103.9" x2="215.8" y2="191.1"/>
+      <line class="e removed" x1="455.8" y1="103.9" x2="484.2" y2="191.1"/>
+      <line class="e" x1="170" y1="50" x2="95.8" y2="103.9"/><line class="e" x1="170" y1="50" x2="124.2" y2="191.1"/><line class="e" x1="95.8" y1="103.9" x2="124.2" y2="191.1"/>
+      <line class="e" x1="244.2" y1="103.9" x2="170" y2="50"/><line class="e" x1="244.2" y1="103.9" x2="95.8" y2="103.9"/><line class="e" x1="244.2" y1="103.9" x2="124.2" y2="191.1"/>
+      <line class="e" x1="215.8" y1="191.1" x2="170" y2="50"/><line class="e" x1="215.8" y1="191.1" x2="95.8" y2="103.9"/><line class="e" x1="215.8" y1="191.1" x2="124.2" y2="191.1"/>
+      <line class="e" x1="530" y1="50" x2="604.2" y2="103.9"/><line class="e" x1="530" y1="50" x2="575.8" y2="191.1"/><line class="e" x1="604.2" y1="103.9" x2="575.8" y2="191.1"/>
+      <line class="e" x1="455.8" y1="103.9" x2="530" y2="50"/><line class="e" x1="455.8" y1="103.9" x2="604.2" y2="103.9"/><line class="e" x1="455.8" y1="103.9" x2="575.8" y2="191.1"/>
+      <line class="e" x1="484.2" y1="191.1" x2="530" y2="50"/><line class="e" x1="484.2" y1="191.1" x2="604.2" y2="103.9"/><line class="e" x1="484.2" y1="191.1" x2="575.8" y2="191.1"/>
+      <line class="e link" x1="244.2" y1="103.9" x2="455.8" y2="103.9"/>
+      <circle class="vx" cx="170" cy="50" r="22"/><text class="num" x="170" y="50">100</text>
+      <circle class="vx" cx="95.8" cy="103.9" r="22"/><text class="num" x="95.8" y="103.9">100</text>
+      <circle class="vx" cx="124.2" cy="191.1" r="22"/><text class="num" x="124.2" y="191.1">100</text>
+      <circle class="vx" cx="244.2" cy="103.9" r="22"/><text class="num" x="244.2" y="103.9">66</text>
+      <circle class="vx" cx="215.8" cy="191.1" r="22"/><text class="num" x="215.8" y="191.1">85</text>
+      <circle class="vx" cx="530" cy="50" r="22"/><text class="num" x="530" y="50">−100</text>
+      <circle class="vx" cx="604.2" cy="103.9" r="22"/><text class="num" x="604.2" y="103.9">−100</text>
+      <circle class="vx" cx="575.8" cy="191.1" r="22"/><text class="num" x="575.8" y="191.1">−100</text>
+      <circle class="vx" cx="455.8" cy="103.9" r="22"/><text class="num" x="455.8" y="103.9">−66</text>
+      <circle class="vx" cx="484.2" cy="191.1" r="22"/><text class="num" x="484.2" y="191.1">−85</text>
+      <line class="e removed" x1="262" y1="246" x2="304" y2="246"/>
+      <text class="lbl soft" x="314" y="250">deleted edge</text>
+    </svg>
+  </div>
+  <figcaption><b>Figure 2.</b> The 10-vertex graph, with the pattern that certifies its <span class="v">λ</span><sub>2</sub>. The agreement score of this pattern is 146244/41581 ≈ 3.5171.</figcaption>
+</figure>
+
+<p>Its Randić index is exactly 13/4 + √3 and its radius is 3, so the right side of the conjecture is 7/4 + √3 ≈ 3.4821. Its <span class="v">λ</span><sub>2</sub> is about 3.5171, which is larger.</p>
+<p>This one can be settled without decimals. The pattern in Figure 2 has agreement score 146244/41581. The same pattern with all signs positive scores more, the two patterns are perpendicular, and neither interacts with the other. By the two-pattern test, <span class="v">λ</span><sub>2</sub> ≥ 146244/41581. Finally (146244/41581 − 7/4)<sup>2</sup> = 86382500281/27663672976, which is greater than 3, so <span class="v">λ</span><sub>2</sub> &gt; 7/4 + √3 and the conjecture fails on this graph.</p>
+<p>The corpus's authors tested every graph with at most 9 vertices, so 10 is the first size at which this could happen. The certificate is exact arithmetic, checked by a script. It is not formalized in Lean.</p>
+
+<h3>What the graphs do not break</h3>
+<p>They are not a universal weapon. The source paper highlights seven conjectures. Our graphs kill the second. The other six hold on all 1,128 graphs we tried them on, and so do the two stronger forms of Conjecture 1 that the paper proposes. None of the 3,798 conjectures that the archive proves from an unproved lemma fails either.</p>
+
+<h3>A tool that came out of it</h3>
+<p>Graphs like these consist of a few classes of interchangeable vertices. Their eigenvalues, Randić index, rank, radius and diameter can then be read off a small matrix with one row per class: 7 rows for a cluster graph, whatever its number of vertices. On the 206 graphs where we could compare, the shortcut agrees with the direct computation to 15 digits. With it, about 135,000 conjectures were checked against 215 graphs of up to two million vertices, thirteen times over, in a little over a minute on a laptop.</p>
+<p>The corpus's authors could add such graphs to their test set at almost no cost. The same goes for anyone who generates conjectures of this kind: test on large graphs with few vertex classes before calling a conjecture open.</p>
+
+<h2 id="inside">What follows inside the subject</h2>
+
+<h3>The best straight-line bound</h3>
+<p class="status-line"><span class="status">A two-line consequence of the Lean theorems, not itself formalized</span></p>
+<p>No inequality of the form <span class="v">λ</span><sub>2</sub> ≤ <span class="v">a</span> · <span class="v">μ</span><sub>1</sub> + <span class="v">b</span> with <span class="v">a</span> &lt; 1 holds for all connected graphs. With <span class="v">a</span> = 1 the best possible <span class="v">b</span> is −1. The reason: on cluster graphs <span class="v">μ</span><sub>1</sub> grows without limit while <span class="v">μ</span><sub>1</sub> − <span class="v">λ</span><sub>2</sub> stays below 1 + ε. So the line <span class="v">λ</span><sub>2</sub> = <span class="v">μ</span><sub>1</sub> − 1 is the best linear relation between the two numbers.</p>
+
+<h3>Theorem 1 of the source paper is tight at every scale</h3>
+<p class="status-line"><span class="status">Follows from the Lean theorems and the paper's Theorem 1</span></p>
+<p>The source paper proves <span class="v">μ</span><sub>2</sub> ≥ <span class="v">λ</span><sub>2</sub> + 1, where <span class="v">μ</span><sub>2</sub> is the second largest Laplacian eigenvalue, and notes that stars give equality. Stars have <span class="v">λ</span><sub>2</sub> = 0. Because <span class="v">μ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub>, cluster graphs show the same tightness with <span class="v">λ</span><sub>2</sub> as large as you like. We computed <span class="v">μ</span><sub>2</sub> − <span class="v">λ</span><sub>2</sub> = 1.0199 for a cluster graph with two million vertices.</p>
+
+<h3>An exact value for <span class="v">λ</span><sub>2</sub></h3>
+<p class="status-line"><span class="status">Short argument, checked numerically on 351 graphs, not formalized</span></p>
+<p>In a cluster graph with core size <span class="v">m</span> and <span class="v">s</span> satellites, <span class="v">λ</span><sub>2</sub> equals the largest eigenvalue of one cluster on its own:</p>
+<div class="formula" role="math" aria-label="lambda 2 equals m minus 1 plus the square root of m minus 1 squared plus 4 m s, all over 2">
+  <span class="v">λ</span><sub>2</sub> = <span class="frac"><span>(<span class="v">m</span> − 1) + √((<span class="v">m</span> − 1)<sup>2</sup> + 4<span class="v">ms</span>)</span><span>2</span></span>
+</div>
+<p>Delete the connector and two separate clusters remain, whose two largest eigenvalues are equal. Interlacing squeezes <span class="v">λ</span><sub>2</sub> of the whole graph between them. This is sharper than the bound the Lean proof uses, which is the average degree of a cluster.</p>
+
+<h3>Conjecture 1 would be tight at radius 3</h3>
+<p class="status-line"><span class="status">Numerical</span></p>
+<p>As described above: on cluster graphs with two satellites, <span class="v">R</span> − <span class="v">λ</span><sub>2</sub> tends to 1 with radius 3 and diameter 6. If Conjecture 1 is true, no extra term that depends on the radius or the diameter can be added to it.</p>
+
+<h2 id="lean">Reusable pieces of the Lean proof</h2>
+<p>Three parts of the formalization do not depend on this problem.</p>
+<ul>
+  <li><b>Two eigenvalue tests.</b> If the score of every pattern is at most <span class="v">c</span>, every eigenvalue is at most <span class="v">c</span>. If two perpendicular patterns that do not interact both score at least <span class="v">c</span>, the second largest eigenvalue is at least <span class="v">c</span>. Both are derived from Mathlib's spectral theorem in one file, <code>Rayleigh.lean</code>, and stated for any real symmetric matrix. A formal bound on an eigenvalue of a concrete graph can start from them.</li>
+  <li><b>Two classical lemmas the corpus still lacks in Lean.</b> The corpus ships its own Lean library. Its lemma table lists <code>l1_deg</code> (2<span class="v">m</span>/<span class="v">n</span> ≤ <span class="v">λ</span><sub>1</sub> ≤ Δ) and <code>mu1_deg</code> (Δ + 1 ≤ <span class="v">μ</span><sub>1</sub> ≤ min(<span class="v">n</span>, 2Δ)) without a Lean theorem, and counts 4,113 and 1,933 proofs that use them. Our file <code>BestConstant.lean</code> proves one half of each: every adjacency eigenvalue is at most Δ, and <span class="v">μ</span><sub>1</sub> ≥ Δ + 1. The archive's notes say 37,885 of its proofs are not yet verified in Lean, in most cases because a lemma has not been formalized or connected yet, and they name <code>l1_deg</code> as an example. The two projects use different Mathlib versions and different definitions of the invariants, so the lemmas would need adapting.</li>
+  <li><b>A way to move certificates between vertex sets.</b> The cluster graph is easiest to describe with structured vertex names. <code>Transfer.lean</code> carries a bound proved there over to the numbered vertices that the final statement uses.</li>
+</ul>
+<p>The method also transfers: find a counterexample numerically, turn it into fractions, and let Lean check the fractions. For an upper bound on <span class="v">μ</span><sub>1</sub> the certificate is a sum of squares. For a lower bound on <span class="v">λ</span><sub>2</sub> it is a pair of vectors.</p>
+
+<h2 id="outside">Outside mathematics</h2>
+<p>Both numbers have day jobs. Here is where they meet and what the theorem says there. Nothing in this section has been tested on real networks.</p>
+<p><span class="v">μ</span><sub>1</sub> is a hard limit in several places.</p>
+<ul>
+  <li><b>Averaging over a network.</b> Each node repeatedly moves its value toward its neighbours' values by a step α. The values converge to the average exactly when α is below 2/<span class="v">μ</span><sub>1</sub>, because the update multiplies each mode by 1 − α<span class="v">μ</span> and the fastest mode has <span class="v">μ</span> = <span class="v">μ</span><sub>1</sub>. Xiao and Boyd (2004) is the standard reference.</li>
+  <li><b>Synchronization.</b> For a broad class of coupled oscillators, the synchronized state is stable when the ratio of <span class="v">μ</span><sub>1</sub> to the smallest non-zero Laplacian eigenvalue is below a threshold set by the oscillator (Barahona and Pecora, 2002).</li>
+  <li><b>Filters on graphs.</b> Chebyshev filters, used in graph neural networks, rescale the Laplacian by its largest eigenvalue before applying a polynomial (Defferrard, Bresson and Vandergheynst, 2016). That eigenvalue is <span class="v">μ</span><sub>1</sub> when the plain Laplacian is used.</li>
+  <li><b>Cuts.</b> No cut of a graph with <span class="v">n</span> vertices has more than <span class="v">n</span> · <span class="v">μ</span><sub>1</sub>/4 edges (Mohar and Poljak, 1990).</li>
+</ul>
+<p><span class="v">λ</span><sub>2</sub> measures something else: it is large when the network has two separate dense groups.</p>
+<p>The old inequality already tied the two together: two dense groups with <span class="v">λ</span><sub>2</sub> force <span class="v">μ</span><sub>1</sub> above <span class="v">λ</span><sub>2</sub> + 1. Conjecture 2 would have licensed a stricter rule of thumb, <span class="v">λ</span><sub>2</sub> + 2. The theorem says the floor is <span class="v">λ</span><sub>2</sub> + 1 and no higher, and its graphs show how a network gets down to that floor: inside each group every node has about the same number of links, and the link between the groups hangs on nodes that have fewer.</p>
+<p>A small worked case. In the 11-vertex barbell the limit on the averaging step is 2/5.128 = 0.390. Remove the one edge at each joint and the limit is 2/4.618 = 0.433, which is 11% larger, because the busiest vertex is no longer the one that carries the bridge.</p>
+<p>The honest size of all this is one unit of <span class="v">μ</span><sub>1</sub>. That is about a fifth of <span class="v">μ</span><sub>1</sub> when the busiest node has 3 links, and under one percent when it has 100. For large dense networks it is noise.</p>
+
+<h2 id="limits">What we did not do</h2>
+<ul>
+  <li>Only 4 of the 125 refutations are checked in Lean. Another 18 are proved by hand in <a href="../paper/paper.pdf">the paper</a>. The remaining 103 are floating-point findings with the margins stated above.</li>
+  <li>"Open" means open in the archive published with the paper of 2 November 2026. Some of these conjectures may have been settled since.</li>
+  <li>We did not look for the smallest possible counterexample to each conjecture, only among the graphs we tested.</li>
+  <li>The split into 22 and 103 depends on the plain barbells we tried: 190 of them, from 6 to two million vertices. A barbell we did not try could move a conjecture from the first group to the second.</li>
+  <li>19 further open conjectures fail on plain barbells and not on our graphs. They are not counted in the 125.</li>
+  <li>We have not shown these results to the corpus's authors.</li>
+</ul>
+
+<hr>
+<div class="sources">
+  <ol>
+    <li>T. Cazenave, <i>Lemmas and Conjectures in Spectral Graph Theory</i>, <a href="https://arxiv.org/abs/2611.03879">arXiv:2611.03879</a>, 2 November 2026, and its archive of proofs (the corpus file, the lemma table and the notes cited above).</li>
+    <li>E. Duhamel and T. Cazenave, <i>Spectral Graph Theory Conjecture Generation</i>, AAAI 2026 Workshop AI for Research.</li>
+    <li>L. Xiao and S. Boyd, <i>Fast linear iterations for distributed averaging</i>, Systems &amp; Control Letters 53 (2004), 65–78.</li>
+    <li>M. Barahona and L. M. Pecora, <i>Synchronization in small-world systems</i>, Physical Review Letters 89 (2002), 054101.</li>
+    <li>M. Defferrard, X. Bresson and P. Vandergheynst, <i>Convolutional neural networks on graphs with fast localized spectral filtering</i>, NeurIPS 2016.</li>
+    <li>B. Mohar and S. Poljak, <i>Eigenvalues and the max-cut problem</i>, Czechoslovak Mathematical Journal 40 (1990), 343–352.</li>
+  </ol>
+  <p class="note">The test is reproducible: <a href="corpus_scan.py"><code>corpus_scan.py</code></a> beside this page reads the corpus file from the archive of Cazenave's paper and prints every number quoted here; the 125 conjectures are listed in <a href="refuted_open_rows.csv"><code>refuted_open_rows.csv</code></a>. The companion page, <a href="../exposition/index.html">the exposition</a>, explains the theorem itself. The programs, the scan and this page were written by an AI system (Claude, by Anthropic), directed by the author.</p>
+</div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  function el(name, attrs, parent, text) {
+    var n = document.createElementNS(NS, name);
+    for (var k in attrs) { n.setAttribute(k, attrs[k]); }
+    if (text !== undefined) { n.textContent = text; }
+    if (parent) { parent.appendChild(n); }
+    return n;
+  }
+  function bars(fig) {
+    var heads = [].map.call(fig.querySelectorAll("thead th"), function (th) { return th.textContent.trim(); });
+    var rows = [].map.call(fig.querySelectorAll("tbody tr"), function (tr) {
+      return [].map.call(tr.children, function (td) { return td.textContent.trim(); });
+    });
+    var plot = fig.querySelector(".plot");
+    var tip = document.createElement("div");
+    tip.className = "tip";
+    tip.hidden = true;
+    var max = 90, ticks = [0, 20, 40, 60, 80];
+
+    function render() {
+      var W = Math.max(280, Math.floor(plot.clientWidth));
+      var narrow = W < 520;
+      var left = narrow ? 8 : 150, right = 40, top = 8, rowH = narrow ? 58 : 44, barH = 22;
+      var H = top + rows.length * rowH + 34;
+      var pw = W - left - right;
+      function X(v) { return left + v / max * pw; }
+      plot.textContent = "";
+      var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: W, height: H }, plot);
+      ticks.forEach(function (t) {
+        el("line", { "class": "gridline", x1: X(t), x2: X(t), y1: top, y2: top + rows.length * rowH }, svg);
+        el("text", { "class": "tick", x: X(t), y: top + rows.length * rowH + 16, "text-anchor": "middle" }, svg, String(t));
+      });
+      el("text", { "class": "axistitle", x: left + pw / 2, y: H - 2, "text-anchor": "middle" }, svg, "number of open conjectures");
+      rows.forEach(function (r, i) {
+        var y = top + i * rowH + (narrow ? 24 : (rowH - barH) / 2);
+        if (narrow) {
+          el("text", { "class": "cat", x: left, y: y - 8 }, svg, r[0]);
+        } else {
+          el("text", { "class": "cat", x: left - 12, y: y + barH / 2 + 4, "text-anchor": "end" }, svg, r[0]);
+        }
+        var x = X(0), total = 0;
+        // column 1 = needs the construction (series 2, at the baseline), column 2 = size only (series 1)
+        [[1, "s2"], [2, "s1"]].forEach(function (pair, k) {
+          var v = parseFloat(r[pair[0]]);
+          if (!(v > 0)) { return; }
+          total += v;
+          var w = v / max * pw;
+          var last = k === 1 || !(parseFloat(r[2]) > 0);
+          var gap = k === 1 && parseFloat(r[1]) > 0 ? 2 : 0;
+          var x0 = x + gap, w0 = Math.max(1, w - gap);
+          var d = last
+            ? "M" + x0 + "," + y + "h" + (w0 - 4) + "a4,4 0 0 1 4,4v" + (barH - 8) + "a4,4 0 0 1 -4,4h" + (-(w0 - 4)) + "z"
+            : "M" + x0 + "," + y + "h" + w0 + "v" + barH + "h" + (-w0) + "z";
+          if (w0 < 5) { d = "M" + x0 + "," + y + "h" + w0 + "v" + barH + "h" + (-w0) + "z"; }
+          var seg = el("path", { "class": "seg " + pair[1], d: d, tabindex: "0", role: "img",
+            "aria-label": r[0] + ": " + v + " " + heads[pair[0]].toLowerCase() }, svg);
+          var hit = el("rect", { "class": "hit", x: x0 - 2, y: y - 6, width: Math.max(w0 + 4, 24), height: barH + 12 }, svg);
+          function show() {
+            tip.textContent = "";
+            var h = document.createElement("div"); h.className = "th"; h.textContent = r[0];
+            var row = document.createElement("div"); row.className = "tr";
+            var key = document.createElement("i"); key.style.borderColor = "var(--series-" + (pair[1] === "s1" ? 1 : 2) + ")";
+            var b = document.createElement("b"); b.textContent = String(v);
+            var s = document.createElement("span"); s.textContent = heads[pair[0]].toLowerCase();
+            row.appendChild(key); row.appendChild(b); row.appendChild(s);
+            tip.appendChild(h); tip.appendChild(row);
+            tip.hidden = false;
+            var scale = plot.clientWidth / W;
+            var lx = (x0 + w0 / 2) * scale - tip.offsetWidth / 2;
+            tip.style.left = Math.max(0, Math.min(plot.clientWidth - tip.offsetWidth, lx)) + "px";
+            tip.style.top = Math.max(0, y * scale - tip.offsetHeight - 8) + "px";
+          }
+          function hide() { tip.hidden = true; }
+          hit.addEventListener("pointerenter", show);
+          hit.addEventListener("pointerleave", hide);
+          seg.addEventListener("focus", show);
+          seg.addEventListener("blur", hide);
+          if (w0 >= 26 && parseFloat(r[1]) > 0 && parseFloat(r[2]) > 0) {
+            el("text", { "class": "inlabel", x: x0 + 8, y: y + barH / 2 + 4 }, svg, String(v));
+          }
+          x += w;
+        });
+        el("text", { "class": "total", x: x + 8, y: y + barH / 2 + 4 }, svg, String(total));
+      });
+      plot.appendChild(tip);
+    }
+    render();
+    if (window.ResizeObserver) {
+      var lastW = plot.clientWidth;
+      new ResizeObserver(function () {
+        if (Math.abs(plot.clientWidth - lastW) > 2) { lastW = plot.clientWidth; render(); }
+      }).observe(plot);
+    } else {
+      window.addEventListener("resize", render);
+    }
+  }
+  [].forEach.call(document.querySelectorAll("figure.bars"), bars);
+  window.addEventListener("beforeprint", function () {
+    [].forEach.call(document.querySelectorAll("details"), function (x) { x.open = true; });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The gap is one</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one reading column on cool paper; figures break out to a wider measure.
+   Ink and two data colours only: blue for what was tested, orange for the one edge that matters. */
+:root {
+  color-scheme: light;
+  --page: #f3f5f8;
+  --surface: #fcfcfb;
+  --ink: #10151c;
+  --ink-2: #47505d;
+  --muted: #76808d;
+  --rule: #dbe0e7;
+  --link: #1c5cab;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --grid: #e4e7ec;
+  --axis: #c3c9d1;
+  --font-body: "STIX Two Text", Cambria, Georgia, "Times New Roman", serif;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0e1013;
+    --surface: #1a1a19;
+    --ink: #eceef1;
+    --ink-2: #bcc2cb;
+    --muted: #8b929d;
+    --rule: #2c3037;
+    --link: #86b6ef;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --grid: #2a2d31;
+    --axis: #3b3f45;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0e1013;
+  --surface: #1a1a19;
+  --ink: #eceef1;
+  --ink-2: #bcc2cb;
+  --muted: #8b929d;
+  --rule: #2c3037;
+  --link: #86b6ef;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --grid: #2a2d31;
+  --axis: #3b3f45;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 19px;
+  line-height: 1.62;
+}
+.wrap {
+  display: grid;
+  grid-template-columns: minmax(16px, 1fr) minmax(0, 40rem) minmax(16px, 1fr);
+  row-gap: 0;
+  padding: 56px 0 96px;
+}
+.wrap > * { grid-column: 2; }
+.wrap > .wide {
+  grid-column: 1 / -1;
+  width: min(900px, 100% - 32px);
+  justify-self: center;
+}
+
+h1, h2, h3, .eyebrow, figcaption, .brief, table, summary, .legend, .tip, .sources, dt, .note {
+  font-family: var(--font-ui);
+}
+.eyebrow {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+h1 {
+  margin: 0 0 20px;
+  font-size: clamp(32px, 6vw, 46px);
+  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.deck {
+  margin: 0 0 32px;
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.byline {
+  margin: -14px 0 32px;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+h2 {
+  margin: 64px 0 12px;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+h3 {
+  margin: 36px 0 8px;
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 600;
+  text-wrap: balance;
+}
+p { margin: 0 0 18px; }
+a { color: var(--link); text-underline-offset: 2px; }
+a:focus-visible, summary:focus-visible, .plot:focus-visible {
+  outline: 2px solid var(--series-1);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+ul { margin: 0 0 18px; padding-left: 1.2em; }
+li { margin-bottom: 8px; }
+sub, sup { font-size: 0.72em; line-height: 0; }
+.v { font-style: italic; }
+code, pre { font-family: var(--font-mono); }
+code { font-size: 0.82em; }
+
+.brief {
+  margin: 0 0 8px;
+  padding: 20px 24px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.brief h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.brief ul { margin: 0; }
+.brief li:last-child { margin-bottom: 0; }
+
+.formula {
+  margin: 4px 0 20px;
+  padding: 14px 18px;
+  overflow-x: auto;
+  background: var(--surface);
+  border-left: 3px solid var(--axis);
+  font-size: 18px;
+  white-space: nowrap;
+}
+.formula .frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  margin: 0 4px;
+}
+.formula .frac > span:first-child { border-bottom: 1px solid currentColor; padding: 0 6px 2px; }
+.formula .frac > span:last-child { padding: 2px 6px 0; }
+.formula .name { font-family: var(--font-ui); font-size: 15px; color: var(--ink-2); margin-right: 10px; }
+
+blockquote.claim {
+  margin: 8px 0 22px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--ink);
+  border-radius: 0 10px 10px 0;
+  font-size: 20px;
+}
+blockquote.claim b { font-family: var(--font-ui); font-weight: 600; font-size: 16px; }
+
+figure { margin: 30px auto 34px; }
+figure .frame {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 18px;
+  overflow-x: auto;
+}
+figure svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--ink);
+}
+figcaption {
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+figcaption b { font-weight: 600; color: var(--ink); }
+
+/* diagram parts */
+.e { stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; fill: none; }
+.e.core { opacity: 0.5; }
+.e.sat { opacity: 0.24; }
+.e.link { stroke-width: 2.6; }
+.e.stub { opacity: 0.28; }
+.e.removed { stroke: var(--series-2); stroke-width: 2.2; stroke-dasharray: 7 6; }
+.vx { fill: var(--surface); stroke: currentColor; stroke-width: 1.7; }
+.vx.solid { fill: currentColor; }
+.vx.conn { fill: var(--series-1); stroke: var(--series-1); }
+.lbl { font: 500 13px var(--font-ui); fill: currentColor; }
+.lbl.soft { fill: var(--ink-2); font-weight: 400; }
+.lbl.mid { text-anchor: middle; }
+.num { font: 600 15px var(--font-ui); fill: currentColor; text-anchor: middle; dominant-baseline: central; }
+.num.zero { fill: var(--muted); font-weight: 400; }
+.tag { fill: var(--surface); stroke: var(--axis); stroke-width: 1; }
+
+/* charts */
+.chart .frame { padding: 16px 16px 10px; overflow: visible; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0 0 6px; font-size: 14px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { display: inline-block; width: 22px; height: 0; border-top: 2px solid; border-radius: 2px; }
+.legend .k1 { border-color: var(--series-1); }
+.legend .k2 { border-color: var(--series-2); }
+.plot { position: relative; min-height: 120px; }
+.plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+.plot .gridline { stroke: var(--grid); stroke-width: 1; }
+.plot .axisline { stroke: var(--axis); stroke-width: 1; }
+.plot .ref { stroke: var(--ink-2); stroke-width: 1; }
+.plot .tick { font: 400 12px var(--font-ui); fill: var(--muted); font-variant-numeric: tabular-nums; }
+.plot .axistitle { font: 400 12.5px var(--font-ui); fill: var(--ink-2); }
+.plot .reflabel { font: 500 12.5px var(--font-ui); fill: var(--ink-2); }
+.plot .serieslabel { font: 500 13px var(--font-ui); fill: var(--ink); }
+.chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart .s1 { stroke: var(--series-1); }
+.chart .s2 { stroke: var(--series-2); }
+.chart .dot { stroke: var(--surface); stroke-width: 2; }
+.chart .dot.s1 { fill: var(--series-1); }
+.chart .dot.s2 { fill: var(--series-2); }
+.chart .ring { fill: var(--surface); stroke-width: 2; }
+.legend svg.key { flex: none; overflow: visible; }
+.plot .cross { stroke: var(--ink-2); stroke-width: 1; }
+.plot .hit { fill: transparent; }
+.tip {
+  position: absolute;
+  z-index: 2;
+  min-width: 190px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--axis);
+  border-radius: 8px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.14);
+  font-size: 13px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.tip .th { color: var(--ink-2); margin-bottom: 6px; }
+.tip .tr { display: flex; align-items: center; gap: 8px; }
+.tip .tr i { width: 14px; border-top: 2px solid; }
+.tip .tr b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.tip .tr span { color: var(--ink-2); }
+.noscript { font-family: var(--font-ui); font-size: 14px; color: var(--ink-2); }
+
+details { margin-top: 10px; font-family: var(--font-ui); font-size: 14px; }
+summary { cursor: pointer; color: var(--link); width: fit-content; }
+.tablewrap { overflow-x: auto; margin-top: 10px; }
+table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 14px 6px 0; text-align: right; white-space: nowrap; }
+th { font-weight: 600; color: var(--ink-2); border-bottom: 1px solid var(--axis); vertical-align: bottom; white-space: normal; }
+td { border-bottom: 1px solid var(--rule); }
+th:first-child, td:first-child { text-align: left; }
+
+pre.lean {
+  margin: 8px 0 22px;
+  padding: 16px 18px;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.theorem {
+  margin: 26px 0;
+  padding: 20px 24px;
+  background: var(--surface);
+  border: 1px solid var(--ink);
+  border-radius: 10px;
+  font-size: 21px;
+  line-height: 1.45;
+}
+.theorem b { font-family: var(--font-ui); font-weight: 600; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+
+dl { margin: 0; display: grid; grid-template-columns: 1fr; gap: 14px; }
+dt { font-size: 15px; font-weight: 600; }
+dd { margin: 2px 0 0; font-size: 17px; line-height: 1.5; }
+
+.sources { font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.sources ol { padding-left: 1.3em; margin: 0; }
+.sources li { margin-bottom: 8px; }
+.note { font-size: 14.5px; color: var(--ink-2); line-height: 1.5; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 56px 0 24px; }
+
+/* diagrams shrink with the screen, so their labels grow to stay readable */
+@media (max-width: 780px) {
+  .lbl { font-size: 17px; }
+  .num { font-size: 18px; }
+}
+@media (max-width: 520px) {
+  .lbl { font-size: 21px; }
+  .num { font-size: 22px; }
+  figure .frame { padding: 12px; }
+  body { font-size: 17.5px; }
+  .deck { font-size: 19px; }
+  .wrap { padding-top: 36px; }
+  .theorem, blockquote.claim { font-size: 18.5px; }
+}
+@media print {
+  body { background: #fff; font-size: 11.5pt; }
+  .wrap { padding: 0; }
+  figure, .brief, .theorem, pre.lean { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  .tip { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">Spectral graph theory, checked in Lean 4</p>
+<h1>A gap that was supposed to be 2 is 1</h1>
+<p class="deck">Every network has two numbers attached to it that describe its shape. A conjecture written by a computer and published on 2 November 2026 says they always stay at least 2 apart. They can come as close as 1 and no closer, and a proof checker has verified every step of that.</p>
+<p class="byline">Sulaymon Sadullo, November 2026. Also in this project: <a href="../paper/paper.pdf">the paper</a>, <a href="../applications/index.html">what the theorem is good for</a>, and <a href="../index.html">the Lean proof</a>.</p>
+
+<aside class="brief" aria-label="In brief">
+  <h2>In brief</h2>
+  <ul>
+    <li>The conjecture: for every connected graph, <span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − 2.</li>
+    <li>It is false. The smallest counterexample we know has 11 vertices, and there is one of every size from 11 up.</li>
+    <li>The true statement: <span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − <span class="v">c</span> holds for all connected graphs exactly when <span class="v">c</span> ≤ 1.</li>
+    <li>The proofs are written in Lean 4 and machine-checked: about 1,950 lines, no gaps.</li>
+  </ul>
+</aside>
+
+<h2 id="two-numbers">Two numbers for every network</h2>
+<p>A graph is a set of dots, called vertices, with lines, called edges, joining some pairs of them. A road map is a graph, and so is a friendship network. All graphs here are connected: you can get from any vertex to any other by following edges.</p>
+<p>Write a number on every vertex and call the result a pattern. Two scoring rules turn a pattern into a single number.</p>
+<p>The <b>agreement score</b>. For each edge, multiply the numbers at its two ends and double the product. Add these up over all edges, then divide by the sum of the squares of all the numbers. A pattern scores well when vertices joined by an edge carry large numbers of the same sign.</p>
+<p>The <b>difference score</b>. For each edge, subtract the number at one end from the number at the other and square the result. Add these up and divide by the same sum of squares. A pattern scores well when vertices joined by an edge carry very different numbers.</p>
+<div class="formula" role="math" aria-label="agreement score equals two times the sum over edges of x u times x v, divided by the sum of x v squared; difference score equals the sum over edges of x u minus x v squared, divided by the sum of x v squared">
+  <span class="name">agreement</span> = <span class="frac"><span>2 · Σ<sub>edges <span class="v">uv</span></sub> <span class="v">x<sub>u</sub> x<sub>v</sub></span></span><span>Σ<sub><span class="v">v</span></sub> <span class="v">x<sub>v</sub></span><sup>2</sup></span></span>
+  &nbsp;&nbsp;&nbsp;
+  <span class="name">difference</span> = <span class="frac"><span>Σ<sub>edges <span class="v">uv</span></sub> (<span class="v">x<sub>u</sub></span> − <span class="v">x<sub>v</sub></span>)<sup>2</sup></span><span>Σ<sub><span class="v">v</span></sub> <span class="v">x<sub>v</sub></span><sup>2</sup></span></span>
+</div>
+<p>Three numbers come out of these rules.</p>
+<ul>
+  <li><span class="v">λ</span><sub>1</sub> is the highest agreement score any pattern can reach.</li>
+  <li><span class="v">λ</span><sub>2</sub> is the runner-up: the highest agreement score among patterns perpendicular to the winner. There is a simpler test for it. Find two patterns that sit on two separate parts of the graph, with no edge running from one part to the other. If both score at least 5, then <span class="v">λ</span><sub>2</sub> is at least 5. So <span class="v">λ</span><sub>2</sub> is large when the graph contains two separate dense regions.</li>
+  <li><span class="v">μ</span><sub>1</sub> is the highest difference score any pattern can reach.</li>
+</ul>
+<p>In the usual vocabulary, <span class="v">λ</span><sub>1</sub> and <span class="v">λ</span><sub>2</sub> are the two largest eigenvalues of the adjacency matrix of the graph, <span class="v">μ</span><sub>1</sub> is the largest eigenvalue of its Laplacian matrix, and the two scores are called Rayleigh quotients.</p>
+
+<h3>The busiest vertex controls both</h3>
+<p>Let Δ be the largest number of edges at any single vertex, the maximum degree. Both scores answer to it.</p>
+<p>No pattern has agreement score above Δ. For any two numbers, twice their product is at most the sum of their squares, so each edge contributes at most the squares at its two ends. A vertex's square is counted once for every edge at that vertex, at most Δ times. Hence <span class="v">λ</span><sub>2</sub> ≤ <span class="v">λ</span><sub>1</sub> ≤ Δ.</p>
+<p>Some pattern has difference score at least Δ + 1, as Figure 1 shows. Hence <span class="v">μ</span><sub>1</sub> ≥ Δ + 1, a theorem of Grone and Merris from 1994.</p>
+
+<figure class="wide">
+  <div class="frame">
+    <svg class="diagram" viewBox="0 0 600 230" role="img" aria-label="A vertex with three neighbours carries the number 3 and each neighbour carries minus 1, so every one of the three edges sees a difference of 4.">
+      <line class="e stub" x1="150" y1="55" x2="78" y2="34"/>
+      <line class="e stub" x1="150" y1="55" x2="84" y2="96"/>
+      <line class="e stub" x1="150" y1="175" x2="78" y2="196"/>
+      <line class="e stub" x1="410" y1="115" x2="482" y2="72"/>
+      <line class="e stub" x1="410" y1="115" x2="482" y2="158"/>
+      <line class="e" x1="280" y1="115" x2="150" y2="55"/>
+      <line class="e" x1="280" y1="115" x2="150" y2="175"/>
+      <line class="e" x1="280" y1="115" x2="410" y2="115"/>
+      <rect class="tag" x="201" y="74" width="28" height="22" rx="5"/><text class="num" x="215" y="85">4</text>
+      <rect class="tag" x="201" y="134" width="28" height="22" rx="5"/><text class="num" x="215" y="145">4</text>
+      <rect class="tag" x="331" y="104" width="28" height="22" rx="5"/><text class="num" x="345" y="115">4</text>
+      <circle class="vx" cx="280" cy="115" r="21"/><text class="num" x="280" y="115">3</text>
+      <circle class="vx" cx="150" cy="55" r="21"/><text class="num" x="150" y="55">−1</text>
+      <circle class="vx" cx="150" cy="175" r="21"/><text class="num" x="150" y="175">−1</text>
+      <circle class="vx" cx="410" cy="115" r="21"/><text class="num" x="410" y="115">−1</text>
+      <text class="lbl soft" x="280" y="76" text-anchor="middle">3 edges here</text>
+      <text class="lbl soft" x="474" y="119">elsewhere: 0</text>
+    </svg>
+  </div>
+  <figcaption><b>Figure 1.</b> Put 3 on a vertex with 3 edges, −1 on each neighbour and 0 everywhere else. The tags show the difference along each edge. The difference score is (4² + 4² + 4²) / (3² + 1 + 1 + 1) = 48/12 = 4, and any further edges can only add to the top. A vertex with Δ edges gives Δ + 1 in the same way.</figcaption>
+</figure>
+
+<p>Put the two facts together and you have the starting point of this story: for every connected graph, <span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − 1. The two numbers are always at least 1 apart.</p>
+
+<h2 id="conjecture">The conjecture, and why it looked safe</h2>
+<p>Elie Duhamel and Tristan Cazenave built a program that writes inequalities between graph quantities and then hunts for graphs that break them. Their corpus holds 305,755 such conjectures. On 2 November 2026 Cazenave posted a paper reporting that an automated pipeline had refuted 162,964 of them and proved 117,390. From the ones left standing he picked seven as the most interesting. The second reads:</p>
+<blockquote class="claim"><b>Conjecture 2.</b> For every connected graph, <span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − 2.</blockquote>
+<p>That is the known inequality with a 2 where the 1 was. Call <span class="v">μ</span><sub>1</sub> − <span class="v">λ</span><sub>2</sub> the gap. The conjecture says the gap never drops below 2, and the evidence was good.</p>
+<ul>
+  <li>Paths. A path of 10 vertices in a row has gap 2.22. With 100 vertices it is 2.003. The gap sinks toward 2 and stays above it.</li>
+  <li>Barbells. Two tightly knit groups joined by a path behave the same way. The one behind Figure 2 has gap 2.04, and a longer path gives 2.0001.</li>
+  <li>Brute force. The author tested every connected graph with at most 9 vertices, more than a quarter of a million of them, and structured families with up to 2,000 vertices.</li>
+</ul>
+<p>Two weaker versions sat in the same corpus, also open: the same inequality with √2 ≈ 1.414 and with <sup>4</sup>√2 ≈ 1.189 in place of 2. The √2 version is printed in the table of selected conjectures in Duhamel and Cazenave's workshop paper.</p>
+
+<h2 id="counterexample">Eleven vertices that break it</h2>
+<p>Start from the barbell made of two groups of four vertices, every pair inside a group joined, with a path of three vertices between the groups. Delete one edge beside each joint: the edge from the vertex where the path attaches to one of its group mates. Figure 2 shows the result, which we call <span class="v">G</span><sub>11</sub>.</p>
+
+<figure class="wide">
+  <div class="frame">
+    <svg class="diagram" viewBox="0 0 760 262" role="img" aria-label="The graph G 11: two groups of four vertices joined by a path of three vertices. In each group the edge between the joint vertex and the far vertex has been deleted.">
+      <line class="e removed" x1="70" y1="112" x2="230" y2="112"/>
+      <line class="e removed" x1="530" y1="112" x2="690" y2="112"/>
+      <line class="e" x1="230" y1="112" x2="150" y2="52"/>
+      <line class="e" x1="230" y1="112" x2="150" y2="172"/>
+      <line class="e" x1="70" y1="112" x2="150" y2="52"/>
+      <line class="e" x1="70" y1="112" x2="150" y2="172"/>
+      <line class="e" x1="150" y1="52" x2="150" y2="172"/>
+      <line class="e" x1="530" y1="112" x2="610" y2="52"/>
+      <line class="e" x1="530" y1="112" x2="610" y2="172"/>
+      <line class="e" x1="690" y1="112" x2="610" y2="52"/>
+      <line class="e" x1="690" y1="112" x2="610" y2="172"/>
+      <line class="e" x1="610" y1="52" x2="610" y2="172"/>
+      <line class="e" x1="230" y1="112" x2="310" y2="112"/>
+      <line class="e" x1="310" y1="112" x2="380" y2="112"/>
+      <line class="e" x1="380" y1="112" x2="450" y2="112"/>
+      <line class="e" x1="450" y1="112" x2="530" y2="112"/>
+      <circle class="vx solid" cx="70" cy="112" r="7"/>
+      <circle class="vx solid" cx="150" cy="52" r="7"/>
+      <circle class="vx solid" cx="150" cy="172" r="7"/>
+      <circle class="vx solid" cx="230" cy="112" r="7"/>
+      <circle class="vx solid" cx="310" cy="112" r="7"/>
+      <circle class="vx solid" cx="380" cy="112" r="7"/>
+      <circle class="vx solid" cx="450" cy="112" r="7"/>
+      <circle class="vx solid" cx="530" cy="112" r="7"/>
+      <circle class="vx solid" cx="610" cy="52" r="7"/>
+      <circle class="vx solid" cx="610" cy="172" r="7"/>
+      <circle class="vx solid" cx="690" cy="112" r="7"/>
+      <text class="lbl soft mid" x="150" y="208">group of four</text>
+      <text class="lbl soft mid" x="380" y="146">path of three</text>
+      <text class="lbl soft mid" x="610" y="208">group of four</text>
+      <text class="lbl soft mid" x="232" y="92">joint</text>
+      <text class="lbl soft mid" x="528" y="92">joint</text>
+      <line class="e removed" x1="262" y1="242" x2="304" y2="242"/>
+      <text class="lbl soft" x="314" y="246">edge of the barbell, deleted in G₁₁</text>
+    </svg>
+  </div>
+  <figcaption><b>Figure 2.</b> <span class="v">G</span><sub>11</sub>: 11 vertices, 14 edges. With the two dashed edges put back it is the barbell, whose gap is 2.042. Without them the gap is 1.977.</figcaption>
+</figure>
+
+<p>For <span class="v">G</span><sub>11</sub> a computer gives <span class="v">λ</span><sub>2</sub> ≈ 2.6412 and <span class="v">μ</span><sub>1</sub> ≈ 4.6180. The gap is 1.9768, and the conjecture needs 2.</p>
+
+<h3>Why one edge matters</h3>
+<p>In the barbell the two joint vertices have 4 edges and every other vertex has at most 3. So Δ = 4, and the busiest-vertex argument forces <span class="v">μ</span><sub>1</sub> ≥ 5. The true value is 5.13. Each group of four keeps <span class="v">λ</span><sub>2</sub> near 3, and the true value is 3.09. The gap comes out just above 2.</p>
+<p>Delete the edge and the joint vertex has 3 edges like its neighbours. Now Δ = 3 and <span class="v">μ</span><sub>1</sub> is free to fall, to 4.62. The damaged group still holds together well enough to keep <span class="v">λ</span><sub>2</sub> at 2.64. So <span class="v">μ</span><sub>1</sub> lost 0.51 while <span class="v">λ</span><sub>2</sub> lost 0.44, and that difference of 0.07 carries the gap from 2.04 to 1.98.</p>
+<p>The author's test families contained barbells, and barbells make the conjecture look sharp. Figure 3 shows their gap settling onto 2 from above. The counterexample sits one edge away from them.</p>
+
+<figure class="wide chart" id="chart-path"
+  data-xcol="0" data-series="2,3" data-xscale="linear" data-xmin="1" data-xmax="12" data-xticks="1,2,3,4,5,6,7,8,9,10,11,12"
+  data-ymin="1.9" data-ymax="2.34" data-yticks="1.9,2,2.1,2.2,2.3" data-decimals="1"
+  data-refs="2|conjectured floor: 2" data-reflabels="inside" data-labelpos="end"
+  data-xtitle="vertices on the path between the two groups" data-ytitle="gap μ₁ − λ₂"
+  data-tiphead="{0} path vertices, {1} vertices in all">
+  <div class="frame">
+    <div class="legend" aria-hidden="true">
+      <span><i class="k1"></i>complete groups (barbell)</span>
+      <span><i class="k2"></i>one edge deleted at each joint</span>
+    </div>
+    <div class="plot" tabindex="0" role="img" aria-label="Line chart. With complete groups the gap falls from 2.30 to 2.00 as the path grows from 1 to 12 vertices and never goes below 2. With one edge deleted at each joint it falls from 2.17 to 1.92, crossing below 2 at a path of 3 vertices."></div>
+    <noscript><p class="noscript">This chart is drawn by a script. The same numbers are in the table below.</p></noscript>
+  </div>
+  <figcaption><b>Figure 3.</b> The gap for two groups of four joined by a path, as the path grows. Complete groups approach 2 and stay above it. Delete one edge at each joint and the curve drops through 2 at a path of three vertices, which is <span class="v">G</span><sub>11</sub>. With no path vertex at all the two gaps are 2.85 and 2.49, off the top of the chart. Computed numerically.</figcaption>
+  <details>
+    <summary>Table of values</summary>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Path vertices</th><th>Vertices in all</th><th>Complete groups</th><th>One edge deleted at each joint</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>9</td><td>2.3028</td><td>2.1705</td></tr>
+        <tr><td>2</td><td>10</td><td>2.1130</td><td>2.0374</td></tr>
+        <tr><td>3</td><td>11</td><td>2.0423</td><td>1.9768</td></tr>
+        <tr><td>4</td><td>12</td><td>2.0157</td><td>1.9483</td></tr>
+        <tr><td>5</td><td>13</td><td>2.0058</td><td>1.9348</td></tr>
+        <tr><td>6</td><td>14</td><td>2.0021</td><td>1.9283</td></tr>
+        <tr><td>7</td><td>15</td><td>2.0008</td><td>1.9253</td></tr>
+        <tr><td>8</td><td>16</td><td>2.0003</td><td>1.9239</td></tr>
+        <tr><td>9</td><td>17</td><td>2.0001</td><td>1.9232</td></tr>
+        <tr><td>10</td><td>18</td><td>2.0000</td><td>1.9229</td></tr>
+        <tr><td>11</td><td>19</td><td>2.0000</td><td>1.9227</td></tr>
+        <tr><td>12</td><td>20</td><td>2.0000</td><td>1.9226</td></tr>
+      </tbody>
+    </table></div>
+  </details>
+</figure>
+
+<h3>A proof that does not trust decimals</h3>
+<p>Those decimals come from floating point arithmetic, which proves nothing. The proof replaces them with two certificates made of fractions.</p>
+<p><b>A ceiling for <span class="v">μ</span><sub>1</sub>.</b> No pattern on <span class="v">G</span><sub>11</sub> has difference score above 37/8 = 4.625. The certificate is an identity: 37/8 times the sum of squares, minus the sum of squared differences, equals a sum of 17 squared expressions with positive coefficients. A sum of squares is never negative, so the difference score never exceeds 37/8.</p>
+<p><b>A floor for <span class="v">λ</span><sub>2</sub>.</b> Figure 4 shows a pattern that lives on the left group. Its agreement score is 293/111 ≈ 2.6396. The mirror image on the right group scores the same, and no edge joins the two patterns. By the two-pattern test, <span class="v">λ</span><sub>2</sub> ≥ 293/111.</p>
+
+<figure class="wide">
+  <div class="frame">
+    <svg class="diagram" viewBox="0 0 760 232" role="img" aria-label="The pattern used as a certificate: 7 on the left joint vertex, 6 on the far left vertex, 8 on the two middle vertices of the left group, 3 on the first path vertex, and 0 on the other six vertices.">
+      <line class="e" x1="230" y1="116" x2="150" y2="50"/>
+      <line class="e" x1="230" y1="116" x2="150" y2="182"/>
+      <line class="e" x1="70" y1="116" x2="150" y2="50"/>
+      <line class="e" x1="70" y1="116" x2="150" y2="182"/>
+      <line class="e" x1="150" y1="50" x2="150" y2="182"/>
+      <line class="e stub" x1="530" y1="116" x2="610" y2="50"/>
+      <line class="e stub" x1="530" y1="116" x2="610" y2="182"/>
+      <line class="e stub" x1="690" y1="116" x2="610" y2="50"/>
+      <line class="e stub" x1="690" y1="116" x2="610" y2="182"/>
+      <line class="e stub" x1="610" y1="50" x2="610" y2="182"/>
+      <line class="e" x1="230" y1="116" x2="310" y2="116"/>
+      <line class="e stub" x1="310" y1="116" x2="380" y2="116"/>
+      <line class="e stub" x1="380" y1="116" x2="450" y2="116"/>
+      <line class="e stub" x1="450" y1="116" x2="530" y2="116"/>
+      <circle class="vx" cx="70" cy="116" r="18"/><text class="num" x="70" y="116">6</text>
+      <circle class="vx" cx="150" cy="50" r="18"/><text class="num" x="150" y="50">8</text>
+      <circle class="vx" cx="150" cy="182" r="18"/><text class="num" x="150" y="182">8</text>
+      <circle class="vx" cx="230" cy="116" r="18"/><text class="num" x="230" y="116">7</text>
+      <circle class="vx" cx="310" cy="116" r="18"/><text class="num" x="310" y="116">3</text>
+      <circle class="vx" cx="380" cy="116" r="18"/><text class="num zero" x="380" y="116">0</text>
+      <circle class="vx" cx="450" cy="116" r="18"/><text class="num zero" x="450" y="116">0</text>
+      <circle class="vx" cx="530" cy="116" r="18"/><text class="num zero" x="530" y="116">0</text>
+      <circle class="vx" cx="610" cy="50" r="18"/><text class="num zero" x="610" y="50">0</text>
+      <circle class="vx" cx="610" cy="182" r="18"/><text class="num zero" x="610" y="182">0</text>
+      <circle class="vx" cx="690" cy="116" r="18"/><text class="num zero" x="690" y="116">0</text>
+    </svg>
+  </div>
+  <figcaption><b>Figure 4.</b> The certificate for <span class="v">λ</span><sub>2</sub>. Products along the six edges that touch only non-zero vertices: 56 + 56 + 48 + 48 + 64 + 21 = 293. Squares: 49 + 36 + 64 + 64 + 9 = 222. Agreement score: 2 × 293 / 222 = 293/111. You can check it by hand.</figcaption>
+</figure>
+
+<p>The ceiling minus the floor is 37/8 − 293/111 = 1763/888 ≈ 1.9854. The gap of <span class="v">G</span><sub>11</sub> is therefore below 2 by at least 13/888, and Conjecture 2 is false.</p>
+
+<h2 id="every-size">Every size from 11 up</h2>
+<p>Make the path longer and nothing breaks. The ceiling 37/8 and the floor 293/111 hold for a path of any length, and the proof handles all lengths at once by induction along the path. A path with <span class="v">k</span> vertices gives a graph with <span class="v">k</span> + 8 vertices, and <span class="v">k</span> can be anything from 3 up. So Conjecture 2 fails on <span class="v">n</span> vertices for every <span class="v">n</span> ≥ 11.</p>
+<p>It is not known whether 11 is the smallest possible size. The author's exhaustive test covers 9 vertices. Our own searches at 10 vertices found nothing, and they were not exhaustive.</p>
+
+<h2 id="how-low">How low can the gap go?</h2>
+<p>The deleted-edge trick works better with bigger groups, but in our computations it levels off near 1.62. Getting to 1 takes a different design, and the busiest-vertex argument says what it must look like. For the gap to be near 1, <span class="v">λ</span><sub>2</sub> has to sit just below Δ and <span class="v">μ</span><sub>1</sub> just above Δ + 1.</p>
+<ul>
+  <li><span class="v">λ</span><sub>2</sub> just below Δ: the graph needs two separate regions where nearly every vertex has nearly Δ edges.</li>
+  <li><span class="v">μ</span><sub>1</sub> just above Δ + 1: this is fragile. Hang anything on a vertex that already has Δ edges and Δ goes up by one.</li>
+</ul>
+<p>A cluster does both. Take <span class="v">m</span> vertices, all joined to each other, and call them the core. Add <span class="v">s</span> more vertices, the satellites, each joined to every core vertex and to no other satellite. A core vertex has <span class="v">m</span> + <span class="v">s</span> − 1 edges, and that is Δ. A satellite has only <span class="v">m</span>, so one more edge on a satellite leaves Δ alone. Now take two clusters and one extra vertex, the connector, joined to a single satellite of each.</p>
+
+<figure class="wide">
+  <div class="frame">
+    <svg class="diagram" viewBox="0 0 760 290" role="img" aria-label="Two clusters and a connector. Each cluster has a core of five vertices, all joined to each other, and three satellites joined to every core vertex. The connector vertex in the middle is joined to one satellite of each cluster.">
+      <line class="e core" x1="150" y1="78" x2="81.5" y2="127.8"/><line class="e core" x1="150" y1="78" x2="107.7" y2="208.2"/><line class="e core" x1="150" y1="78" x2="192.3" y2="208.2"/><line class="e core" x1="150" y1="78" x2="218.5" y2="127.8"/><line class="e core" x1="81.5" y1="127.8" x2="107.7" y2="208.2"/><line class="e core" x1="81.5" y1="127.8" x2="192.3" y2="208.2"/><line class="e core" x1="81.5" y1="127.8" x2="218.5" y2="127.8"/><line class="e core" x1="107.7" y1="208.2" x2="192.3" y2="208.2"/><line class="e core" x1="107.7" y1="208.2" x2="218.5" y2="127.8"/><line class="e core" x1="192.3" y1="208.2" x2="218.5" y2="127.8"/>
+      <line class="e sat" x1="292" y1="78" x2="150" y2="78"/><line class="e sat" x1="292" y1="78" x2="81.5" y2="127.8"/><line class="e sat" x1="292" y1="78" x2="107.7" y2="208.2"/><line class="e sat" x1="292" y1="78" x2="192.3" y2="208.2"/><line class="e sat" x1="292" y1="78" x2="218.5" y2="127.8"/>
+      <line class="e sat" x1="292" y1="150" x2="150" y2="78"/><line class="e sat" x1="292" y1="150" x2="81.5" y2="127.8"/><line class="e sat" x1="292" y1="150" x2="107.7" y2="208.2"/><line class="e sat" x1="292" y1="150" x2="192.3" y2="208.2"/><line class="e sat" x1="292" y1="150" x2="218.5" y2="127.8"/>
+      <line class="e sat" x1="292" y1="222" x2="150" y2="78"/><line class="e sat" x1="292" y1="222" x2="81.5" y2="127.8"/><line class="e sat" x1="292" y1="222" x2="107.7" y2="208.2"/><line class="e sat" x1="292" y1="222" x2="192.3" y2="208.2"/><line class="e sat" x1="292" y1="222" x2="218.5" y2="127.8"/>
+      <line class="e core" x1="610" y1="78" x2="678.5" y2="127.8"/><line class="e core" x1="610" y1="78" x2="652.3" y2="208.2"/><line class="e core" x1="610" y1="78" x2="567.7" y2="208.2"/><line class="e core" x1="610" y1="78" x2="541.5" y2="127.8"/><line class="e core" x1="678.5" y1="127.8" x2="652.3" y2="208.2"/><line class="e core" x1="678.5" y1="127.8" x2="567.7" y2="208.2"/><line class="e core" x1="678.5" y1="127.8" x2="541.5" y2="127.8"/><line class="e core" x1="652.3" y1="208.2" x2="567.7" y2="208.2"/><line class="e core" x1="652.3" y1="208.2" x2="541.5" y2="127.8"/><line class="e core" x1="567.7" y1="208.2" x2="541.5" y2="127.8"/>
+      <line class="e sat" x1="468" y1="78" x2="610" y2="78"/><line class="e sat" x1="468" y1="78" x2="678.5" y2="127.8"/><line class="e sat" x1="468" y1="78" x2="652.3" y2="208.2"/><line class="e sat" x1="468" y1="78" x2="567.7" y2="208.2"/><line class="e sat" x1="468" y1="78" x2="541.5" y2="127.8"/>
+      <line class="e sat" x1="468" y1="150" x2="610" y2="78"/><line class="e sat" x1="468" y1="150" x2="678.5" y2="127.8"/><line class="e sat" x1="468" y1="150" x2="652.3" y2="208.2"/><line class="e sat" x1="468" y1="150" x2="567.7" y2="208.2"/><line class="e sat" x1="468" y1="150" x2="541.5" y2="127.8"/>
+      <line class="e sat" x1="468" y1="222" x2="610" y2="78"/><line class="e sat" x1="468" y1="222" x2="678.5" y2="127.8"/><line class="e sat" x1="468" y1="222" x2="652.3" y2="208.2"/><line class="e sat" x1="468" y1="222" x2="567.7" y2="208.2"/><line class="e sat" x1="468" y1="222" x2="541.5" y2="127.8"/>
+      <line class="e link" x1="380" y1="150" x2="292" y2="150"/>
+      <line class="e link" x1="380" y1="150" x2="468" y2="150"/>
+      <circle class="vx solid" cx="150" cy="78" r="7"/><circle class="vx solid" cx="81.5" cy="127.8" r="7"/><circle class="vx solid" cx="107.7" cy="208.2" r="7"/><circle class="vx solid" cx="192.3" cy="208.2" r="7"/><circle class="vx solid" cx="218.5" cy="127.8" r="7"/>
+      <circle class="vx" cx="292" cy="78" r="7"/><circle class="vx" cx="292" cy="150" r="7"/><circle class="vx" cx="292" cy="222" r="7"/>
+      <circle class="vx solid" cx="610" cy="78" r="7"/><circle class="vx solid" cx="678.5" cy="127.8" r="7"/><circle class="vx solid" cx="652.3" cy="208.2" r="7"/><circle class="vx solid" cx="567.7" cy="208.2" r="7"/><circle class="vx solid" cx="541.5" cy="127.8" r="7"/>
+      <circle class="vx" cx="468" cy="78" r="7"/><circle class="vx" cx="468" cy="150" r="7"/><circle class="vx" cx="468" cy="222" r="7"/>
+      <circle class="vx conn" cx="380" cy="150" r="8"/>
+      <text class="lbl soft mid" x="150" y="252">core: m vertices,</text>
+      <text class="lbl soft mid" x="150" y="270">all joined to each other</text>
+      <text class="lbl soft mid" x="610" y="252">core</text>
+      <text class="lbl soft mid" x="292" y="52">s satellites</text>
+      <text class="lbl soft mid" x="468" y="52">s satellites</text>
+      <text class="lbl mid" x="380" y="128">connector</text>
+    </svg>
+  </div>
+  <figcaption><b>Figure 5.</b> Two clusters and a connector, drawn for <span class="v">m</span> = 5 and <span class="v">s</span> = 3. Core vertices are solid and satellites are hollow. Every satellite is joined to every core vertex of its cluster. The connector touches one satellite on each side, so no core vertex gains an edge.</figcaption>
+</figure>
+
+<p>For this graph we prove two bounds:</p>
+<div class="formula" role="math" aria-label="mu 1 is at most m plus s plus 3 over s, and lambda 2 is at least m times m minus 1 plus 2 m s, all divided by m plus s">
+  <span class="v">μ</span><sub>1</sub> ≤ <span class="v">m</span> + <span class="v">s</span> + <span class="frac"><span>3</span><span><span class="v">s</span></span></span>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <span class="v">λ</span><sub>2</sub> ≥ <span class="frac"><span><span class="v">m</span>(<span class="v">m</span> − 1) + 2<span class="v">ms</span></span><span><span class="v">m</span> + <span class="v">s</span></span></span>
+</div>
+<p>The right-hand side of the second bound is the average number of neighbours a vertex has inside its own cluster. Subtract and the gap satisfies</p>
+<div class="formula" role="math" aria-label="mu 1 minus lambda 2 is at most 1 plus 3 over s plus s squared minus s over m plus s">
+  <span class="v">μ</span><sub>1</sub> − <span class="v">λ</span><sub>2</sub> ≤ 1 + <span class="frac"><span>3</span><span><span class="v">s</span></span></span> + <span class="frac"><span><span class="v">s</span><sup>2</sup> − <span class="v">s</span></span><span><span class="v">m</span> + <span class="v">s</span></span></span>
+</div>
+<p>The term 3/<span class="v">s</span> is what the two connector edges cost, diluted over <span class="v">s</span> satellites. The last term is what it costs that satellites have fewer edges than core vertices. Choose <span class="v">s</span> large and then <span class="v">m</span> much larger, say <span class="v">m</span> = <span class="v">s</span><sup>3</sup>, and both terms shrink to nothing.</p>
+
+<figure class="wide chart" id="chart-cluster"
+  data-xcol="2" data-series="3,4" data-xscale="log" data-xmin="10" data-xmax="10000000" data-xticks="10,100,1000,10000,100000,1000000,10000000"
+  data-ymin="0.8" data-ymax="2.8" data-yticks="1,1.5,2,2.5" data-decimals="1"
+  data-refs="2|Conjecture 2;1.4142|√2 version;1.1892|⁴√2 version;1|1: never reached|below" data-reflabels="margin"
+  data-labelpos="none" data-markers="1"
+  data-xtitle="number of vertices (×10 per step)" data-ytitle="gap μ₁ − λ₂"
+  data-tiphead="{2} vertices (m = {1}, s = {0})">
+  <div class="frame">
+    <div class="legend" aria-hidden="true">
+      <span><svg class="key" viewBox="0 0 28 12" width="28" height="12"><line class="line s1" x1="1" y1="6" x2="27" y2="6"/><circle class="dot s1" cx="14" cy="6" r="4"/></svg>gap, computed (solid dots)</span>
+      <span><svg class="key" viewBox="0 0 28 12" width="28" height="12"><line class="line s2" x1="1" y1="6" x2="27" y2="6"/><circle class="ring s2" cx="14" cy="6" r="4"/></svg>upper bound, proved (hollow dots)</span>
+    </div>
+    <div class="plot" tabindex="0" role="img" aria-label="Line chart on a logarithmic horizontal axis. For cluster graphs with m equal to s cubed, the computed gap falls from 1.84 at 21 vertices to 1.016 at 4.2 million vertices. The proved upper bound falls from 2.70 to 1.031. Both curves pass below the levels 2, square root of 2 and fourth root of 2, and approach 1."></div>
+    <noscript><p class="noscript">This chart is drawn by a script. The same numbers are in the table below.</p></noscript>
+  </div>
+  <figcaption><b>Figure 6.</b> Ten cluster graphs with <span class="v">m</span> = <span class="v">s</span><sup>3</sup>, from 21 vertices to 4.2 million. The top three horizontal lines are floors that were conjectured. Both curves go through all three and close in on 1. The proof uses only the upper bound (hollow dots). The computed gaps (solid dots) are shown for comparison.</figcaption>
+  <details>
+    <summary>Table of values</summary>
+    <div class="tablewrap"><table>
+      <thead><tr><th>s</th><th>m</th><th>Vertices</th><th>Gap, computed</th><th>Upper bound, proved</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>8</td><td>21</td><td>1.8361</td><td>2.7000</td></tr>
+        <tr><td>3</td><td>27</td><td>61</td><td>1.5954</td><td>2.2000</td></tr>
+        <tr><td>4</td><td>64</td><td>137</td><td>1.4650</td><td>1.9265</td></tr>
+        <tr><td>6</td><td>216</td><td>445</td><td>1.3216</td><td>1.6351</td></tr>
+        <tr><td>8</td><td>512</td><td>1,041</td><td>1.2448</td><td>1.4827</td></tr>
+        <tr><td>12</td><td>1,728</td><td>3,481</td><td>1.1650</td><td>1.3259</td></tr>
+        <tr><td>16</td><td>4,096</td><td>8,225</td><td>1.1243</td><td>1.2459</td></tr>
+        <tr><td>32</td><td>32,768</td><td>65,601</td><td>1.0624</td><td>1.1240</td></tr>
+        <tr><td>64</td><td>262,144</td><td>524,417</td><td>1.0312</td><td>1.0623</td></tr>
+        <tr><td>128</td><td>2,097,152</td><td>4,194,561</td><td>1.0156</td><td>1.0312</td></tr>
+      </tbody>
+    </table></div>
+  </details>
+</figure>
+
+<div class="theorem"><b>Theorem</b>The inequality <span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − <span class="v">c</span> holds for every connected graph with at least 2 vertices if and only if <span class="v">c</span> ≤ 1.</div>
+
+<p>That makes 1 the best possible constant. Conjecture 2 asks for <span class="v">c</span> = 2 and fails. The versions with √2 and <sup>4</sup>√2 fail too. In our computations the smallest cluster graphs that go below each level have 13 vertices for 2, 203 for √2 and 2,139 for <sup>4</sup>√2.</p>
+<p>The gap never equals 1. In a connected graph <span class="v">λ</span><sub>2</sub> is strictly smaller than <span class="v">λ</span><sub>1</sub>, and <span class="v">λ</span><sub>1</sub> is at most Δ. The graphs above come as close as you like without arriving.</p>
+
+<h2 id="lean">What the computer checked</h2>
+<p>The proofs are written in Lean 4. Lean is a programming language for mathematics: you state a theorem, you write its proof, and a small trusted program called the kernel checks every logical step. The library Mathlib supplies the definitions of graphs, matrices and eigenvalues. Our files add about 1,950 lines on top of it. Here are the two definitions and the main statement as they stand in the project:</p>
+<pre class="lean"><code>noncomputable def lambda₂ {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj]
+    (h : 2 ≤ n) : ℝ :=
+  (G.isHermitian_adjMatrix ℝ).eigenvalues₀ ⟨1, by rw [Fintype.card_fin]; omega⟩
+
+noncomputable def mu₁ {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj]
+    (h : 2 ≤ n) : ℝ :=
+  (G.isHermitian_lapMatrix ℝ).eigenvalues₀ ⟨0, by rw [Fintype.card_fin]; omega⟩
+
+theorem best_constant (c : ℝ) :
+    (∀ (n : ℕ) (hn : 2 ≤ n) (G : SimpleGraph (Fin n)) [DecidableRel G.Adj],
+        G.Connected → lambda₂ G hn ≤ mu₁ G hn - c) ↔ c ≤ 1</code></pre>
+<p>In Mathlib, <code>eigenvalues₀</code> is the list of eigenvalues of a symmetric matrix in decreasing order, counted from 0. Position 1 of the adjacency matrix is <span class="v">λ</span><sub>2</sub> and position 0 of the Laplacian matrix is <span class="v">μ</span><sub>1</sub>. The theorem then reads: for every real number <span class="v">c</span>, the claim that every connected graph on <span class="v">n</span> ≥ 2 numbered vertices satisfies <span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − <span class="v">c</span> is true if and only if <span class="v">c</span> ≤ 1.</p>
+<p>Three checks back this up. Lean lists the axioms each proof depends on, and ours depend only on the three standard ones. The files contain no <code>sorry</code>, Lean's placeholder for a missing proof. And we fed Lean twelve deliberately false variants, such as the claim that the constant 1 fails as well. It rejected all twelve.</p>
+<p>One thing Lean cannot check is whether the formal statement says what the English says. A person has to read it, and it is short enough to read.</p>
+
+<h2 id="new">What is new and what is not</h2>
+<p>The inequality with constant 1 was known. Grone and Merris proved <span class="v">μ</span><sub>1</sub> ≥ Δ + 1 in 1994, and <span class="v">λ</span><sub>1</sub> ≤ Δ is older still. Cazenave's own paper contains a stronger fact, <span class="v">μ</span><sub>2</sub> ≥ <span class="v">λ</span><sub>2</sub> + 1 for the second largest Laplacian eigenvalue, and remarks that it "only gives" the constant 1.</p>
+<p>The new part, as far as we could find, is that nothing above 1 works, which settles Conjecture 2 and its two weaker forms. A literature search on 18 November 2026 turned up no earlier counterexample and no earlier statement of the sharp constant. That search took a few hours. It is not a guarantee.</p>
+<p>A computer search over graphs found the first counterexample. The proofs, the Lean code and this page were written by an AI system, Claude, directed by the author. Every formal proof was then checked by Lean.</p>
+
+<h2 id="open">Loose ends</h2>
+<ul>
+  <li>Does a counterexample with 10 vertices exist?</li>
+  <li>We ran these graphs against all 14,150 open conjectures of the corpus. In floating-point arithmetic 125 of them fail, Conjecture 2 and its two weaker forms among them. Eighteen of the others are proved by hand in <a href="../paper/paper.pdf">the paper</a>, and the rest are numerical findings. The details are on the companion page, <a href="../applications/index.html">what the theorem is good for</a>.</li>
+</ul>
+
+<h2 id="words">Words used here</h2>
+<dl>
+  <div><dt>Graph, vertex, edge</dt><dd>Dots and the lines joining some pairs of them. No edge joins a vertex to itself, and two vertices share at most one edge.</dd></div>
+  <div><dt>Connected</dt><dd>Every vertex can be reached from every other by following edges.</dd></div>
+  <div><dt>Degree, and Δ</dt><dd>The degree of a vertex is its number of edges. Δ is the largest degree in the graph.</dd></div>
+  <div><dt>Adjacency matrix</dt><dd>A table with one row and one column per vertex: 1 where two vertices share an edge, 0 otherwise. Its eigenvalues, largest first, are <span class="v">λ</span><sub>1</sub> ≥ <span class="v">λ</span><sub>2</sub> ≥ …</dd></div>
+  <div><dt>Laplacian matrix</dt><dd>The degrees on the diagonal, minus the adjacency matrix. Its largest eigenvalue is <span class="v">μ</span><sub>1</sub>.</dd></div>
+  <div><dt>Eigenvalue</dt><dd>A number attached to a matrix. For the symmetric matrices here, the largest eigenvalue is the best score any pattern can reach, and the later ones are the best scores under added restrictions.</dd></div>
+  <div><dt>Rayleigh quotient</dt><dd>The technical name for the agreement and difference scores.</dd></div>
+  <div><dt>Path, barbell</dt><dd>A path is a row of vertices, each joined to the next. A barbell is two complete groups joined by a path.</dd></div>
+  <div><dt>Counterexample</dt><dd>One case in which a claimed rule fails. One is enough to make the rule false.</dd></div>
+  <div><dt>Lean 4, Mathlib</dt><dd>A proof checker and its library of formalised mathematics.</dd></div>
+</dl>
+
+<hr>
+<div class="sources">
+  <ol>
+    <li>T. Cazenave, <i>Lemmas and Conjectures in Spectral Graph Theory</i>, <a href="https://arxiv.org/abs/2611.03879">arXiv:2611.03879</a>, 2 November 2026. Conjecture 2 and Theorem 1.</li>
+    <li>E. Duhamel and T. Cazenave, <i>Spectral Graph Theory Conjecture Generation</i>, AAAI 2026 Workshop AI for Research. Table 3 lists the √2 version.</li>
+    <li>R. Grone and R. Merris, <i>The Laplacian spectrum of a graph II</i>, SIAM Journal on Discrete Mathematics 7 (1994), 221–229.</li>
+    <li>The Lean 4 sources of this project: nine files, built against Mathlib. They are linked from <a href="../index.html">the project page</a>.</li>
+    <li>S. Sadullo, <i>The gap between the Laplacian spectral radius and the second adjacency eigenvalue of a graph</i>, November 2026: <a href="../paper/paper.pdf">the paper</a> of this project.</li>
+  </ol>
+  <p class="note">Numbers given to four decimals were computed numerically and are illustrations. The statements labelled as proved are the ones checked in Lean.</p>
+</div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  function el(name, attrs, parent, text) {
+    var n = document.createElementNS(NS, name);
+    for (var k in attrs) { n.setAttribute(k, attrs[k]); }
+    if (text !== undefined) { n.textContent = text; }
+    if (parent) { parent.appendChild(n); }
+    return n;
+  }
+  function num(s) { return parseFloat(String(s).replace(/,/g, "")); }
+  function group(n) { return n.toLocaleString("en-US"); }
+
+  function readTable(fig) {
+    var heads = [].map.call(fig.querySelectorAll("thead th"), function (th) { return th.textContent.trim(); });
+    var rows = [].map.call(fig.querySelectorAll("tbody tr"), function (tr) {
+      return [].map.call(tr.children, function (td) { return td.textContent.trim(); });
+    });
+    return { heads: heads, rows: rows };
+  }
+
+  function setup(fig) {
+    var d = fig.dataset;
+    var data = readTable(fig);
+    var xcol = +d.xcol;
+    var scols = d.series.split(",").map(Number);
+    var xs = data.rows.map(function (r) { return num(r[xcol]); });
+    var ys = scols.map(function (c) { return data.rows.map(function (r) { return num(r[c]); }); });
+    var log = d.xscale === "log";
+    var xmin = +d.xmin, xmax = +d.xmax, ymin = +d.ymin, ymax = +d.ymax;
+    var xticks = d.xticks.split(",").map(Number);
+    var yticks = d.yticks.split(",").map(Number);
+    var refs = (d.refs || "").split(";").filter(Boolean).map(function (r) {
+      var p = r.split("|"); return { v: +p[0], label: p[1], below: p[2] === "below" };
+    });
+    var plot = fig.querySelector(".plot");
+    var tip = document.createElement("div");
+    tip.className = "tip";
+    tip.hidden = true;
+    var current = -1;
+    var geom = null;
+
+    function render() {
+      var W = Math.max(280, Math.floor(plot.clientWidth));
+      var narrow = W < 560;
+      var endLabels = d.labelpos === "end" && !narrow;
+      var H = Math.round(Math.max(250, Math.min(360, W * 0.46)));
+      var m = { t: 26, r: narrow ? 14 : (endLabels ? 196 : 128), b: 46, l: 38 };
+      var pw = W - m.l - m.r, ph = H - m.t - m.b;
+      function X(v) {
+        return m.l + (log ? (Math.log10(v) - Math.log10(xmin)) / (Math.log10(xmax) - Math.log10(xmin))
+                          : (v - xmin) / (xmax - xmin)) * pw;
+      }
+      function Y(v) { return m.t + (1 - (v - ymin) / (ymax - ymin)) * ph; }
+
+      plot.textContent = "";
+      var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: W, height: H, "aria-hidden": "true" }, plot);
+
+      yticks.forEach(function (t) {
+        el("line", { "class": "gridline", x1: m.l, x2: m.l + pw, y1: Y(t), y2: Y(t) }, svg);
+        el("text", { "class": "tick", x: m.l - 8, y: Y(t) + 4, "text-anchor": "end" }, svg, t.toFixed(+d.decimals));
+      });
+      el("line", { "class": "axisline", x1: m.l, x2: m.l + pw, y1: m.t + ph, y2: m.t + ph }, svg);
+      var step = (narrow && xticks.length > 7) || (narrow && log) ? 2 : 1;
+      xticks.forEach(function (t, i) {
+        if (i % step) { return; }
+        el("line", { "class": "axisline", x1: X(t), x2: X(t), y1: m.t + ph, y2: m.t + ph + 5 }, svg);
+        el("text", { "class": "tick", x: X(t), y: m.t + ph + 19, "text-anchor": "middle" }, svg, group(t));
+      });
+      el("text", { "class": "axistitle", x: m.l + pw / 2, y: H - 6, "text-anchor": "middle" }, svg, d.xtitle);
+      el("text", { "class": "axistitle", x: 0, y: 12 }, svg, d.ytitle);
+
+      var refInside = narrow || d.reflabels !== "margin";
+      refs.forEach(function (r) {
+        el("line", { "class": "ref", x1: m.l, x2: m.l + pw, y1: Y(r.v), y2: Y(r.v) }, svg);
+        if (refInside) {
+          el("text", { "class": "reflabel", x: m.l + pw - 14, y: r.below ? Y(r.v) + 15 : Y(r.v) - 7, "text-anchor": "end" }, svg, r.label);
+        } else {
+          el("text", { "class": "reflabel", x: m.l + pw + 8, y: Y(r.v) + 4 }, svg, r.label);
+        }
+      });
+
+      ys.forEach(function (col, si) {
+        var pts = col.map(function (v, i) { return X(xs[i]) + "," + Y(v); }).join(" ");
+        el("polyline", { "class": "line s" + (si + 1), points: pts }, svg);
+      });
+      ys.forEach(function (col, si) {
+        var last = col.length - 1;
+        if (d.markers) {
+          col.forEach(function (v, i) {
+            el("circle", { "class": (si === 0 ? "dot" : "ring") + " s" + (si + 1), cx: X(xs[i]), cy: Y(v), r: 4 }, svg);
+          });
+        } else {
+          el("circle", { "class": "dot s" + (si + 1), cx: X(xs[last]), cy: Y(col[last]), r: 4.5 }, svg);
+        }
+        if (endLabels) {
+          el("text", { "class": "serieslabel", x: X(xs[last]) + 12, y: Y(col[last]) + 4 }, svg, data.heads[scols[si]]);
+        }
+      });
+
+      var hover = el("g", { visibility: "hidden" }, svg);
+      var cross = el("line", { "class": "cross", y1: m.t, y2: m.t + ph }, hover);
+      var hdots = ys.map(function (_, si) { return el("circle", { "class": "dot s" + (si + 1), r: 5 }, hover); });
+      var hit = el("rect", { "class": "hit", x: m.l, y: m.t, width: pw, height: ph }, svg);
+      plot.appendChild(tip);
+      geom = { X: X, Y: Y, W: W, H: H, m: m, pw: pw, hover: hover, cross: cross, hdots: hdots };
+
+      hit.addEventListener("pointermove", function (ev) {
+        var box = svg.getBoundingClientRect();
+        var px = (ev.clientX - box.left) * (W / box.width);
+        var best = 0, bd = Infinity;
+        xs.forEach(function (v, i) { var dd = Math.abs(X(v) - px); if (dd < bd) { bd = dd; best = i; } });
+        show(best);
+      });
+      hit.addEventListener("pointerleave", hide);
+      if (current >= 0) { show(current); }
+    }
+
+    function show(i) {
+      if (!geom) { return; }
+      current = i;
+      var g = geom;
+      g.hover.setAttribute("visibility", "visible");
+      g.cross.setAttribute("x1", g.X(xs[i]));
+      g.cross.setAttribute("x2", g.X(xs[i]));
+      g.hdots.forEach(function (c, si) {
+        c.setAttribute("cx", g.X(xs[i]));
+        c.setAttribute("cy", g.Y(ys[si][i]));
+      });
+      tip.textContent = "";
+      var head = document.createElement("div");
+      head.className = "th";
+      head.textContent = d.tiphead.replace(/\{(\d)\}/g, function (_, k) { return data.rows[i][+k]; });
+      tip.appendChild(head);
+      scols.forEach(function (c, si) {
+        var row = document.createElement("div");
+        row.className = "tr";
+        var key = document.createElement("i");
+        key.style.borderColor = "var(--series-" + (si + 1) + ")";
+        var val = document.createElement("b");
+        val.textContent = data.rows[i][c];
+        var name = document.createElement("span");
+        name.textContent = data.heads[c];
+        row.appendChild(key); row.appendChild(val); row.appendChild(name);
+        tip.appendChild(row);
+      });
+      tip.hidden = false;
+      var scale = plot.clientWidth / g.W;
+      var left = g.X(xs[i]) * scale + 14;
+      if (left + tip.offsetWidth > plot.clientWidth - 4) { left = g.X(xs[i]) * scale - tip.offsetWidth - 14; }
+      tip.style.left = Math.max(0, left) + "px";
+      tip.style.top = (g.m.t + 6) + "px";
+    }
+    function hide() {
+      current = -1;
+      tip.hidden = true;
+      if (geom) { geom.hover.setAttribute("visibility", "hidden"); }
+    }
+
+    plot.addEventListener("keydown", function (ev) {
+      var n = xs.length, i = current;
+      if (ev.key === "ArrowRight") { i = Math.min(n - 1, i + 1); }
+      else if (ev.key === "ArrowLeft") { i = i < 0 ? n - 1 : Math.max(0, i - 1); }
+      else if (ev.key === "Home") { i = 0; }
+      else if (ev.key === "End") { i = n - 1; }
+      else if (ev.key === "Escape") { hide(); return; }
+      else { return; }
+      ev.preventDefault();
+      show(i);
+    });
+    plot.addEventListener("focus", function () { if (current < 0) { show(0); } });
+    plot.addEventListener("blur", hide);
+
+    render();
+    if (window.ResizeObserver) {
+      var lastW = plot.clientWidth;
+      new ResizeObserver(function () {
+        if (Math.abs(plot.clientWidth - lastW) > 2) { lastW = plot.clientWidth; render(); }
+      }).observe(plot);
+    } else {
+      window.addEventListener("resize", render);
+    }
+  }
+
+  [].forEach.call(document.querySelectorAll("figure.chart"), setup);
+  window.addEventListener("beforeprint", function () {
+    [].forEach.call(document.querySelectorAll("details"), function (x) { x.open = true; });
+  });
+})();
+</script>
+</body>
+</html>

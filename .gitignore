@@ -1,0 +1,12 @@
+# Lean build output and downloaded packages
+.lake/
+.build-step.log
+
+# LaTeX by-products
+paper/*.aux
+paper/*.log
+paper/*.out
+
+# Python
+__pycache__/
+*.pyc

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The best constant in λ₂ ≤ μ₁ − c is 1</title>
+<meta name="description" content="Conjecture 2 of arXiv:2611.03879 is false, and the known bound λ₂ ≤ μ₁ − 1 cannot be improved. Proof checked in Lean 4.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet">
+<style>
+/* Same paper, ink and type as the exposition and applications pages. */
+:root {
+  color-scheme: light;
+  --page: #f3f5f8;
+  --surface: #fcfcfb;
+  --ink: #10151c;
+  --ink-2: #47505d;
+  --rule: #dbe0e7;
+  --link: #1c5cab;
+  --focus: #2a78d6;
+  --font-body: "STIX Two Text", Cambria, Georgia, "Times New Roman", serif;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0e1013;
+    --surface: #1a1a19;
+    --ink: #eceef1;
+    --ink-2: #bcc2cb;
+    --rule: #2c3037;
+    --link: #86b6ef;
+    --focus: #3987e5;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 19px;
+  line-height: 1.62;
+}
+.wrap {
+  display: grid;
+  grid-template-columns: minmax(16px, 1fr) minmax(0, 40rem) minmax(16px, 1fr);
+  padding: 56px 0 96px;
+}
+.wrap > * { grid-column: 2; }
+h1, h2, .eyebrow, .byline, .parts, .note { font-family: var(--font-ui); }
+.eyebrow {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+h1 {
+  margin: 0 0 20px;
+  font-size: clamp(32px, 6vw, 46px);
+  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.deck { margin: 0 0 32px; font-size: 22px; line-height: 1.45; color: var(--ink-2); }
+.byline { margin: -14px 0 32px; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+h2 {
+  margin: 56px 0 12px;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+p { margin: 0 0 18px; }
+a { color: var(--link); text-underline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+sub { font-size: 0.72em; line-height: 0; }
+.v { font-style: italic; }
+code { font-family: var(--font-mono); font-size: 0.82em; }
+.theorem {
+  margin: 0 0 8px;
+  padding: 20px 24px;
+  background: var(--surface);
+  border: 1px solid var(--ink);
+  border-radius: 10px;
+  font-size: 21px;
+  line-height: 1.45;
+}
+.theorem b {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.theorem small { display: block; margin-top: 10px; font-family: var(--font-ui); font-size: 14.5px; line-height: 1.5; color: var(--ink-2); }
+ol.parts { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+ol.parts li {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  column-gap: 8px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--rule);
+}
+ol.parts .n { font-size: 15px; font-weight: 500; color: var(--ink-2); padding-top: 3px; font-variant-numeric: tabular-nums; }
+ol.parts a { font-size: 19px; font-weight: 600; }
+ol.parts p { margin: 4px 0 0; font-size: 15.5px; line-height: 1.5; color: var(--ink-2); }
+.note { font-size: 14.5px; line-height: 1.5; color: var(--ink-2); }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 56px 0 24px; }
+@media (max-width: 520px) {
+  body { font-size: 17.5px; }
+  .deck { font-size: 19px; }
+  .wrap { padding-top: 36px; }
+  .theorem { font-size: 18.5px; }
+}
+@media print {
+  body { background: #fff; font-size: 11.5pt; }
+  .wrap { padding: 0; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">Spectral graph theory, checked in Lean 4</p>
+<h1>The best constant in <span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − <span class="v">c</span> is 1</h1>
+<p class="deck">Conjecture 2 of T. Cazenave's <i>Lemmas and Conjectures in Spectral Graph Theory</i> says that every connected graph satisfies <span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − 2. It is false. The known bound, with 1 in place of 2, cannot be improved at all.</p>
+<p class="byline">Sulaymon Sadullo, November 2026</p>
+
+<div class="theorem">
+  <b>Theorem</b>
+  The inequality <span class="v">λ</span><sub>2</sub>(<span class="v">G</span>) ≤ <span class="v">μ</span><sub>1</sub>(<span class="v">G</span>) − <span class="v">c</span> holds for every connected graph <span class="v">G</span> with at least 2 vertices if and only if <span class="v">c</span> ≤ 1.
+  <small><span class="v">λ</span><sub>2</sub> is the second largest eigenvalue of the adjacency matrix and <span class="v">μ</span><sub>1</sub> the largest eigenvalue of the Laplacian matrix. Conjecture 2 already fails on a graph with 11 vertices, and on some graph with <span class="v">n</span> vertices for every <span class="v">n</span> ≥ 11.</small>
+</div>
+
+<h2>The five parts</h2>
+<ol class="parts">
+  <li><span class="n">1</span><div>
+    <a id="solution" href="SOLUTION.md">Solution</a>
+    <p>The argument in a few pages, with every certificate written out so that it can be checked by hand.</p>
+  </div></li>
+  <li><span class="n">2</span><div>
+    <a id="lean" href="README.md">Lean formalization</a>
+    <p>Nine files, about 1,950 lines, on top of Mathlib. Main theorem <code>Conj2.best_constant</code>. No <code>sorry</code>, and only the three standard axioms.</p>
+  </div></li>
+  <li><span class="n">3</span><div>
+    <a href="paper/paper.pdf">Paper</a>
+    <p>14 pages. It also proves by hand that eighteen further open conjectures of the same corpus are false, and says where a counterexample can live.</p>
+  </div></li>
+  <li><span class="n">4</span><div>
+    <a href="exposition/index.html">Exposition</a>
+    <p>The result for readers outside the area, with pictures and two charts.</p>
+  </div></li>
+  <li><span class="n">5</span><div>
+    <a href="applications/index.html">Potential applications</a>
+    <p>What follows from the theorem. The graphs of the proof are run against all 14,150 open conjectures of the corpus.</p>
+  </div></li>
+</ol>
+
+<h2>What is new and what is not</h2>
+<p>The bound <span class="v">λ</span><sub>2</sub> ≤ <span class="v">μ</span><sub>1</sub> − 1 was known. It follows from <span class="v">λ</span><sub>1</sub> ≤ Δ and the theorem of Grone and Merris (1994) that <span class="v">μ</span><sub>1</sub> ≥ Δ + 1, where Δ is the largest degree, and also from Theorem 1 of Cazenave's paper. The new part, as far as a search of the literature on 18 November 2026 could tell, is that no constant above 1 works. That settles Conjecture 2 and two weaker conjectures of the same corpus, with √2 and the fourth root of 2 in place of 2.</p>
+
+<h2>How it was made</h2>
+<p>A computer search over graphs found the first counterexample. The proofs, the Lean code, the paper and the web pages were written by an AI system (Claude, by Anthropic), directed by the author. Every formal proof is checked by the Lean kernel, and the paper says exactly which statements are covered by Lean and which are proved only by hand.</p>
+
+<hr>
+<p class="note">Source of the conjecture: T. Cazenave, <i>Lemmas and Conjectures in Spectral Graph Theory</i>, <a href="https://arxiv.org/abs/2611.03879">arXiv:2611.03879</a>, 2 November 2026.</p>
+
+</div>
+<script>
+// On GitHub Pages, point the two repository links at the repository itself.
+(function () {
+  "use strict";
+  var host = /^([a-z0-9-]+)\.github\.io$/i.exec(location.hostname);
+  if (!host) { return; }
+  var first = location.pathname.split("/").filter(Boolean)[0] || "";
+  var repo = first && first.indexOf(".") < 0 ? first : host[1] + ".github.io";
+  var base = "https://github.com/" + host[1] + "/" + repo;
+  document.getElementById("lean").href = base;
+  document.getElementById("solution").href = base + "/blob/main/SOLUTION.md";
+})();
+</script>
+</body>
+</html>
